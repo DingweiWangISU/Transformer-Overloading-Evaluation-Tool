@@ -1,0 +1,4 @@
+Cluster probabilities:
+Cluster 1: 0.2698
+Cluster 2: 0.2734
+Cluster 3: 0.4568
