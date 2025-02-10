@@ -1,15 +1,11 @@
 from IPython import get_ipython
 get_ipython().magic('reset -sf')
 import pandas as pd
-from datetime import datetime
 import sys
 import numpy as np
 import random
 import re
 from datetime import datetime, timedelta
-from openpyxl import load_workbook
-from openpyxl.styles import PatternFill
-from openpyxl.formatting.rule import ColorScaleRule
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -57,15 +53,16 @@ def validate_raw_tc(raw_tc_data):
     return set(raw_tc_data['MTR_ID'])
 
 def validate_raw_ami(raw_ami_data, valid_mtr_ids):
+    
     # Check headers
     if raw_ami_data.columns[0] != "Time":
         sys.exit(f"Error: The first column in RAW_AMI.xlsx must be 'Time'. Found: '{raw_ami_data.columns[0]}'. Fix and re-upload.")
-
+    
     # Check if all meter IDs appear in RAW_TC.xlsx
     missing_mtr_ids = set(raw_ami_data.columns[1:]) - valid_mtr_ids
     if missing_mtr_ids:
         sys.exit(f"Error: The following meter IDs in RAW_AMI.xlsx are missing from RAW_TC.xlsx: {missing_mtr_ids}. Fix and re-upload.")
-
+    
     # Check for missing values
     missing_values = raw_ami_data.isnull().sum()
     missing_cols = missing_values[missing_values > 0].index.tolist()
@@ -78,23 +75,12 @@ def validate_raw_ami(raw_ami_data, valid_mtr_ids):
     if raw_ami_data['Time'].isna().any():
         invalid_rows = raw_ami_data[raw_ami_data['Time'].isna()].index.tolist()
         sys.exit(f"Error: Invalid time format in RAW_AMI.xlsx at rows {invalid_rows}. Ensure the 'Time' column follows a consistent datetime format.")
-
-    # Detect the year from the first timestamp
-    year = raw_ami_data['Time'].dt.year.iloc[0]  # Extract year from first row
-
-    # Check if it's a leap year
-    is_leap_year = (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0)
-
-    # Expected row count based on the year type
-    expected_rows = 8784 if is_leap_year else 8760
-
-    # Check if the dataset has the correct number of rows (either 8760 or 8784)
-    if len(raw_ami_data) not in [8760, 8784]:
-        sys.exit(f"Error: RAW_AMI.xlsx must contain either 8760 (normal year) or 8784 (leap year) rows. Found: {len(raw_ami_data)} rows. Fix and re-upload.")
-
-
+    
+    # Check 8760 rows constraint
+    if len(raw_ami_data) != 8760:
+        sys.exit(f"Error: RAW_AMI.xlsx must contain 8760 rows of data (excluding header). Found: {len(raw_ami_data)} rows. Fix and re-upload.")
+    
     return raw_ami_data
-
 
 #%% Transformer data Processing
 
@@ -176,25 +162,18 @@ if __name__ == "__main__":
 
     raw_tc_data = pd.read_excel(raw_tc_path)
     raw_data = pd.read_excel(raw_ami_path)
-    
-    # Step 1: Validate Data
+    # Identify the year from the first timestamp
+    original_first_timestamp = pd.to_datetime(raw_data.iloc[0, 0])  # First value in the time column
+    year = original_first_timestamp.year  # Extract the year
+
+    # Generate a universal time range for the identified year (8760 hourly timestamps)
+    new_time_range = pd.date_range(start=f"{year}-01-01 00:00:00", end=f"{year}-12-31 23:00:00", freq='H')
+
+    # Replace the first column with the universal timestamp
+    raw_data.iloc[:, 0] = new_time_range
+    detected_year = year
     valid_mtr_ids = validate_raw_tc(raw_tc_data)
     raw_data = validate_raw_ami(raw_data, valid_mtr_ids)
-    
-    # Step 2: Detect year and leap year status
-    original_first_timestamp = pd.to_datetime(raw_data.iloc[0, 0])  # First timestamp
-    year = original_first_timestamp.year  # Extract year
-    
-    is_leap_year = (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0)
-    
-    # Step 3: If it's a leap year, remove Feb 29 to keep 8760 rows
-    if is_leap_year and raw_data.iloc[:, 0].dt.strftime('%m-%d').eq('02-29').any():
-    
-        # Remove all rows corresponding to Feb 29
-        raw_data = raw_data[raw_data.iloc[:, 0].dt.strftime('%m-%d') != '02-29']
-        
-    detected_year = year
-
     # Extract meter IDs (assuming the first column is "Time", so meter IDs start from column index 1)
     meter_id_mapping = {f"Customer {i+1}": meter_id for i, meter_id in enumerate(raw_data.columns[1:])}
 
@@ -205,6 +184,7 @@ if __name__ == "__main__":
     # transformed_ami_data.to_excel("AMI_Data.xlsx", index=False)
 
     # print("Transformation complete. Files saved as 'Transformer_Customer_Info.xlsx' and 'AMI_Data.xlsx'.")
+    
     print("Data Transformation complete.")
 
 
@@ -324,10 +304,10 @@ for customer in selected_customers_EV:
     
     # Define probabilities for each season
     probabilities = {
-        'Fall': [0.5, 0.5],
-        'Winter': [0.25, 0.25, 0.25, 0.25],
-        'Spring': [0.4, 0.6],
-        'Summer': [0.7, 0.3]
+        'Fall': [0.9288, 0.0712],
+        'Winter': [0.242, 0.085, 0.644, 0.029],
+        'Spring': [0.7834, 0.2166],
+        'Summer': [0.8, 0.2]
     }
     
     # Initialize a dictionary to store the final DataFrames for each season
@@ -376,9 +356,7 @@ for customer in selected_customers_EV:
     Customer_HP_Spring.iloc[:, -1] = 0    
     Customer_HP_Summer.iloc[:, -1] = 0    
     
-    
-    
-    
+
     
     # Function to select a sheet based on manually entered probabilities and print the selected sheet
     def select_and_sample_with_named_dataframe(prob_1FE, prob_2FE):
@@ -409,9 +387,9 @@ for customer in selected_customers_EV:
         
         return Customer_Ev_Fall_Weekend
     
-    # Example usage with probabilities for each sheet
-    prob_1FE = 0.6  # Probability for selecting EV_Fall_Weekend1
-    prob_2FE = 0.4  # Probability for selecting EV_Fall_Weekend2
+
+    prob_1FE = 0.8824  # Probability for selecting EV_Fall_Weekend1
+    prob_2FE = 0.1176  # Probability for selecting EV_Fall_Weekend2
     Customer_Ev_Fall_Weekend = select_and_sample_with_named_dataframe(prob_1FE, prob_2FE)
     
     
@@ -444,9 +422,9 @@ for customer in selected_customers_EV:
         
         return Customer_Ev_Spring_Weekend
     
-    # Example usage with probabilities for each sheet
-    prob_1SPE = 0.6  # Probability for selecting EV_Fall_Weekend1
-    prob_2SPE = 0.4  # Probability for selecting EV_Fall_Weekend2
+
+    prob_1SPE = 0.5987  # Probability for selecting EV_Spring_Weekend1
+    prob_2SPE = 0.4013  # Probability for selecting EV_Spring_Weekend2
     Customer_Ev_Spring_Weekend = select_and_sample_with_named_dataframe(prob_1SPE, prob_2SPE)
     
     
@@ -480,9 +458,8 @@ for customer in selected_customers_EV:
         
         return Customer_Ev_Winter_Weekend
     
-    # Example usage with probabilities for each sheet
-    prob_1WE = 0.6  # Probability for selecting EV_Fall_Weekend1
-    prob_2WE = 0.4  # Probability for selecting EV_Fall_Weekend2
+    prob_1WE =  0.6688  # Probability for selecting EV_Fall_Weekend1
+    prob_2WE = 0.3312  # Probability for selecting EV_Fall_Weekend2
     Customer_Ev_Winter_Weekend = select_and_sample_with_named_dataframe(prob_1WE, prob_2WE)
     
     
@@ -521,10 +498,10 @@ for customer in selected_customers_EV:
         
         return Customer_Ev_Summer_Weekend
     
-    # Example usage with probabilities for each sheet
-    prob_1SUE = 0.4  # Probability for selecting EV_Summer_Weekend1
-    prob_2SUE = 0.3  # Probability for selecting EV_Summer_Weekend2
-    prob_3SUE = 0.3  # Probability for selecting EV_Summer_Weekend3
+
+    prob_1SUE = 0.3211  # Probability for selecting EV_Summer_Weekend1
+    prob_2SUE = 0.4495  # Probability for selecting EV_Summer_Weekend2
+    prob_3SUE = 0.2294  # Probability for selecting EV_Summer_Weekend3
     Customer_Ev_Summer_Weekend = select_and_sample_with_named_dataframe(prob_1SUE, prob_2SUE, prob_3SUE)
     
     
@@ -534,8 +511,6 @@ for customer in selected_customers_EV:
         sheet_choice = np.random.choice(['EV_Summer_Weekdays1', 'EV_Summer_Weekdays2', 'EV_Summer_Weekdays3'], 
                                         p=[prob_1SUD, prob_2SUD, prob_3SUD])
         
-        # # Print the selected spreadsheet
-        # print(f"Selected Spreadsheet: {sheet_choice}")
         
         # Select the appropriate dataframe
         if sheet_choice == 'EV_Summer_Weekdays1':
@@ -563,10 +538,9 @@ for customer in selected_customers_EV:
         
         return Customer_Ev_Summer_Weekday
     
-    # Example usage with probabilities for each sheet
-    prob_1SUD = 0.4  
-    prob_2SUD= 0.3  
-    prob_3SUD = 0.3  
+    prob_1SUD = 0.2698 
+    prob_2SUD= 0.2734  
+    prob_3SUD = 0.4568 
     Customer_Ev_Summer_Weekday = select_and_sample_with_named_dataframe(prob_1SUD, prob_2SUD, prob_3SUD)
     
     
@@ -605,10 +579,10 @@ for customer in selected_customers_EV:
         
         return Customer_Ev_Spring_Weekday
     
-    # Example usage with probabilities for each sheet
-    prob_1SPD = 0.4  
-    prob_2SPD = 0.3  
-    prob_3SPD = 0.3  
+
+    prob_1SPD = 0.2793  
+    prob_2SPD = 0.4441  
+    prob_3SPD = 0.2766  
     Customer_Ev_Spring_Weekday = select_and_sample_with_named_dataframe(prob_1SPD, prob_2SPD, prob_3SPD)
     
     
@@ -645,9 +619,9 @@ for customer in selected_customers_EV:
         
         return Customer_Ev_Fall_Weekday
     
-    # Example usage with probabilities for each sheet
-    prob_1FD = 0.5  
-    prob_2FD = 0.5  
+
+    prob_1FD = 0.6284  
+    prob_2FD = 0.3716 
     Customer_Ev_Fall_Weekday = select_and_sample_with_named_dataframe(prob_1FD, prob_2FD)
     
     
@@ -687,12 +661,11 @@ for customer in selected_customers_EV:
         })
         
         return Customer_Ev_Winter_Weekday
-    
-    # Example usage with probabilities for each sheet
-    prob_1WD = 0.25  
-    prob_2WD = 0.25  
-    prob_3WD = 0.25  
-    prob_4WD = 0.25  
+
+    prob_1WD = 0.3887  
+    prob_2WD = 0.1841  
+    prob_3WD = 0.1765  
+    prob_4WD = 0.2507  
     Customer_Ev_Winter_Weekday = select_and_sample_with_named_dataframe(prob_1WD, prob_2WD, prob_3WD, prob_4WD)
     
     
@@ -719,8 +692,6 @@ for customer in selected_customers_EV:
     # Create a new DataFrame where Customer_HP_Winter is repeated 59 times
     Customer_W1 = create_repeated_customer_hp_winter(Customer_HP_Winter, 59)
     
-    # Display the shape of the new DataFrame to verify the operation
-    # print(f'Customer_W1 shape: {Customer_W1.shape}')
     
     # Function to add column 5 of AMI_Winter1 to column 3 of Customer_W1
     def add_columns(ami_df, customer_df):
@@ -741,10 +712,7 @@ for customer in selected_customers_EV:
     
     # Assuming AMI_Winter1 and Customer_W1 are already defined in the environment
     HP_Plus_AMI_W1 = add_columns(AMI_Winter1, Customer_W1)
-    
-    # Display the first few rows of the new DataFrame to verify the operation
-    # print(HP_Plus_AMI_W1.head())
-    
+        
     
     def create_repeated_customer_hp_spring(customer_hp_df, repeat_times):
         # Repeat the Customer_HP_Spring data 'repeat_times' times
@@ -754,10 +722,7 @@ for customer in selected_customers_EV:
     # Assuming Customer_HP_Spring is already defined
     Customer_Spring = create_repeated_customer_hp_spring(Customer_HP_Spring, 92)
     
-    # Display the shape and first few rows of the new DataFrame to verify the operation
-    # print(f'Customer_Spring shape: {Customer_Spring.shape}')
-    # print(Customer_Spring.head())
-    
+
     # Function to add column 5 of AMI_Spring to column 3 of Customer_Spring
     def add_columns_spring(ami_df, customer_df):
         # Reset indices to ensure proper alignment
@@ -816,10 +781,7 @@ for customer in selected_customers_EV:
     
     HP_Plus_AMI_Summer = add_columns_summer(AMI_Summer, Customer_Summer)
     
-    # Display the shape and first few rows of the new DataFrame to verify the operation
-    # print(f'HP_Plus_AMI_Summer shape: {HP_Plus_AMI_Summer.shape}')
-    # print(HP_Plus_AMI_Summer.head())
-    
+
     
     # Create a new DataFrame by repeating Customer_HP_Fall 91 times
     def create_repeated_customer_hp_fall(customer_hp_df, repeat_times):
@@ -830,9 +792,6 @@ for customer in selected_customers_EV:
     # Assuming Customer_HP_Fall is already defined
     Customer_Fall = create_repeated_customer_hp_fall(Customer_HP_Fall, 91)
     
-    # Display the shape and first few rows of the new DataFrame to verify the operation
-    # print(f'Customer_Fall shape: {Customer_Fall.shape}')
-    # print(Customer_Fall.head())
     
     # Function to add column 5 of AMI_Fall to column 3 of Customer_Fall
     def add_columns_fall(ami_df, customer_df):
@@ -855,11 +814,7 @@ for customer in selected_customers_EV:
     
     # Assuming AMI_Fall and Customer_Fall are already defined
     HP_Plus_AMI_Fall = add_columns_fall(AMI_Fall, Customer_Fall)
-    
-    # Display the shape and first few rows of the new DataFrame to verify the operation
-    # print(f'HP_Plus_AMI_Fall shape: {HP_Plus_AMI_Fall.shape}')
-    # print(HP_Plus_AMI_Fall.head())
-    
+        
     
     
     # Create a new DataFrame by repeating Customer_HP_Winter 31 times
@@ -870,10 +825,7 @@ for customer in selected_customers_EV:
     
     # Assuming Customer_HP_Winter is already defined
     Customer_W2 = create_repeated_customer_hp_winter(Customer_HP_Winter, 31)
-    
-    # Display the shape and first few rows of the new DataFrame to verify the operation
-    # print(f'Customer_W2 shape: {Customer_W2.shape}')
-    # print(Customer_W2.head())
+
     
     # Function to add column 5 of AMI_Winter2 to column 3 of Customer_W2
     def add_columns_winter2(ami_df, customer_df):
@@ -899,9 +851,6 @@ for customer in selected_customers_EV:
     # Assuming AMI_Winter2 and Customer_W2 are already defined
     HP_Plus_AMI_W2 = add_columns_winter2(AMI_Winter2, Customer_W2)
     
-    # Display the shape and first few rows of the new DataFrame to verify the operation
-    # print(f'HP_Plus_AMI_W2 shape: {HP_Plus_AMI_W2.shape}')
-    # print(HP_Plus_AMI_W2.head())
     
     
     # Function to add a datetime column to represent each hour starting from January 1st, as the first column
@@ -934,8 +883,7 @@ for customer in selected_customers_EV:
     # Add a datetime column to HP_Plus_AMI_Spring starting from March 1st, 2023, as the first column
     HP_Plus_AMI_Spring = add_datetime_column_first_spring(HP_Plus_AMI_Spring)
     
-    # Display the first few rows of the DataFrame to verify the operation
-    # print(HP_Plus_AMI_Spring.head())
+
     
     # Function to add a datetime column to represent each hour starting from June 1st, 2023, as the first column
     def add_datetime_column_first_summer(dataframe, start_date=None):
@@ -950,9 +898,6 @@ for customer in selected_customers_EV:
     
     # Add a datetime column to HP_Plus_AMI_Summer starting from June 1st, 2023, as the first column
     HP_Plus_AMI_Summer = add_datetime_column_first_summer(HP_Plus_AMI_Summer)
-    
-    # Display the first few rows of the DataFrame to verify the operation
-    # print(HP_Plus_AMI_Summer.head())
     
     
     # Function to add a datetime column to represent each hour starting from August 1st, 2023, as the first column
@@ -969,8 +914,6 @@ for customer in selected_customers_EV:
     # Add a datetime column to HP_Plus_AMI_Fall starting from August 1st, 2023, as the first column
     HP_Plus_AMI_Fall = add_datetime_column_first_fall(HP_Plus_AMI_Fall)
     
-    # Display the first few rows of the DataFrame to verify the operation
-    # print(HP_Plus_AMI_Fall.head())
     
     
     # Function to add a datetime column to represent each hour starting from December 1st, 2023, as the first column
@@ -987,8 +930,7 @@ for customer in selected_customers_EV:
     # Add a datetime column to HP_Plus_AMI_W2 starting from December 1st, 2023, as the first column
     HP_Plus_AMI_W2 = add_datetime_column_first_winter2(HP_Plus_AMI_W2)
     
-    # Display the first few rows of the DataFrame to verify the operation
-    # print(HP_Plus_AMI_W2.head())
+
     
     # Function to add a weekday/weekend column to a DataFrame, making it the second column
     def add_weekday_weekend_column(dataframe, datetime_col='Datetime'):
@@ -1008,7 +950,6 @@ for customer in selected_customers_EV:
     HP_Plus_AMI_W2 = add_weekday_weekend_column(HP_Plus_AMI_W2)
     
 
-    
     
     # Function to add the columns together only for weekdays in HP_Plus_AMI_W1
     def add_ev_hp_columns_weekdays(customer_ev_df, hp_plus_ami_df):
@@ -1035,8 +976,6 @@ for customer in selected_customers_EV:
     # Assuming Customer_Ev_Winter_Weekday and HP_Plus_AMI_W1 are already defined
     HP_Plus_AMI_W1_with_EV = add_ev_hp_columns_weekdays(Customer_Ev_Winter_Weekday, HP_Plus_AMI_W1)
     
-    # Display the first few rows of the new DataFrame to verify the operation
-    # print(HP_Plus_AMI_W1_with_EV.head())
     
     # Function to add the columns together only for weekends in HP_Plus_AMI_W1
     def add_ev_hp_columns_weekends(customer_ev_df, hp_plus_ami_df):
@@ -1063,8 +1002,6 @@ for customer in selected_customers_EV:
     # Assuming Customer_Ev_Winter_Weekday and HP_Plus_AMI_W1 are already defined
     HP_Plus_AMI_W1_with_EV_weekends = add_ev_hp_columns_weekends(Customer_Ev_Winter_Weekday, HP_Plus_AMI_W1)
     
-    # Display the first few rows of the new DataFrame to verify the operation
-    # print(HP_Plus_AMI_W1_with_EV_weekends.head())
     
     
     # Function to add the columns together for weekdays in a given season
@@ -1164,8 +1101,6 @@ for customer in selected_customers_EV:
                                       ignore_index=True)
     
 
-    
-    
     # Rename the 5th column in Customer_Total_Usage with the name of the customer from the 5th column of Customer_Profile_AMI
     def rename_customer_column_from_profile(usage_df, profile_df):
         # Get the name of the 5th column from Customer_Profile_AMI
@@ -1211,7 +1146,6 @@ for customer in selected_customers_HP:
     
     Customer_Profile_AMI = pd.concat([excluded_columns, customer_ami_profile], axis=1)
 
-
     
     #Generate HP Profile for seasons to add to AMI Profile
     
@@ -1225,11 +1159,12 @@ for customer in selected_customers_HP:
     
     # Define probabilities for each season
     probabilities = {
-        'Fall': [0.5, 0.5],
-        'Winter': [0.25, 0.25, 0.25, 0.25],
-        'Spring': [0.4, 0.6],
-        'Summer': [0.7, 0.3]
+        'Fall': [0.9288, 0.0712],
+        'Winter': [0.242, 0.085, 0.644, 0.029],
+        'Spring': [0.7834, 0.2166],
+        'Summer': [0.8, 0.2]
     }
+    
     
     # Initialize a dictionary to store the final DataFrames for each season
     seasonal_dataframes = {}
@@ -1272,7 +1207,6 @@ for customer in selected_customers_HP:
     Customer_HP_Spring = seasonal_dataframes['Spring']
     Customer_HP_Summer = seasonal_dataframes['Summer']
         
-        
     
     
     # Function to select a sheet based on manually entered probabilities and print the selected sheet
@@ -1304,7 +1238,6 @@ for customer in selected_customers_HP:
         
         return Customer_Ev_Fall_Weekend
     
-    # Example usage with probabilities for each sheet
     prob_1FE = 0.6  # Probability for selecting EV_Fall_Weekend1
     prob_2FE = 0.4  # Probability for selecting EV_Fall_Weekend2
     Customer_Ev_Fall_Weekend = select_and_sample_with_named_dataframe(prob_1FE, prob_2FE)
@@ -1338,9 +1271,9 @@ for customer in selected_customers_HP:
         
         return Customer_Ev_Spring_Weekend
     
-    # Example usage with probabilities for each sheet
-    prob_1SPE = 0.6  # Probability for selecting EV_Fall_Weekend1
-    prob_2SPE = 0.4  # Probability for selecting EV_Fall_Weekend2
+
+    prob_1SPE = 0.5987  # Probability for selecting EV_Spring_Weekend1
+    prob_2SPE = 0.4013 # Probability for selecting EV_Spring_Weekend2
     Customer_Ev_Spring_Weekend = select_and_sample_with_named_dataframe(prob_1SPE, prob_2SPE)
     Customer_Ev_Spring_Weekend.iloc[:, -1] = 0
     
@@ -1372,9 +1305,9 @@ for customer in selected_customers_HP:
         
         return Customer_Ev_Winter_Weekend
     
-    # Example usage with probabilities for each sheet
-    prob_1WE = 0.6  # Probability for selecting EV_Fall_Weekend1
-    prob_2WE = 0.4  # Probability for selecting EV_Fall_Weekend2
+
+    prob_1WE = 0.6688  # Probability for selecting EV_Winter_Weekend1
+    prob_2WE = 0.3312  # Probability for selecting EV_Winter_Weekend2
     Customer_Ev_Winter_Weekend = select_and_sample_with_named_dataframe(prob_1WE, prob_2WE)
     Customer_Ev_Winter_Weekend.iloc[:, -1] = 0
     
@@ -1384,8 +1317,7 @@ for customer in selected_customers_HP:
         sheet_choice = np.random.choice(['EV_Summer_Weekend1', 'EV_Summer_Weekend2', 'EV_Summer_Weekend3'], 
                                         p=[prob_1SUE, prob_2SUE, prob_3SUE])
         
-
-        
+       
         # Select the appropriate dataframe
         if sheet_choice == 'EV_Summer_Weekend1':
             selected_df = EV_Summer_Weekend1
@@ -1412,7 +1344,6 @@ for customer in selected_customers_HP:
         
         return Customer_Ev_Summer_Weekend
     
-    # Example usage with probabilities for each sheet
     prob_1SUE = 0.4  # Probability for selecting EV_Summer_Weekend1
     prob_2SUE = 0.3  # Probability for selecting EV_Summer_Weekend2
     prob_3SUE = 0.3  # Probability for selecting EV_Summer_Weekend3
@@ -1425,8 +1356,6 @@ for customer in selected_customers_HP:
         sheet_choice = np.random.choice(['EV_Summer_Weekdays1', 'EV_Summer_Weekdays2', 'EV_Summer_Weekdays3'], 
                                         p=[prob_1SUD, prob_2SUD, prob_3SUD])
         
-        # Print the selected spreadsheet
-        # print(f"Selected Spreadsheet: {sheet_choice}")
         
         # Select the appropriate dataframe
         if sheet_choice == 'EV_Summer_Weekdays1':
@@ -1455,9 +1384,9 @@ for customer in selected_customers_HP:
         return Customer_Ev_Summer_Weekday
     
     # Example usage with probabilities for each sheet
-    prob_1SUD = 0.4  
-    prob_2SUD= 0.3  
-    prob_3SUD = 0.3  
+    prob_1SUD = 0.2698  
+    prob_2SUD= 0.2734  
+    prob_3SUD = 0.4568 
     Customer_Ev_Summer_Weekday = select_and_sample_with_named_dataframe(prob_1SUD, prob_2SUD, prob_3SUD)
     Customer_Ev_Summer_Weekday.iloc[:, -1] = 0
     
@@ -1467,8 +1396,6 @@ for customer in selected_customers_HP:
         sheet_choice = np.random.choice(['EV_Spring_Weekdays1', 'EV_Spring_Weekdays2', 'EV_Spring_Weekdays3'], 
                                         p=[prob_1SPD, prob_2SPD, prob_3SPD])
         
-        # Print the selected spreadsheet
-        # print(f"Selected Spreadsheet: {sheet_choice}")
         
         # Select the appropriate dataframe
         if sheet_choice == 'EV_Spring_Weekdays1':
@@ -1496,10 +1423,9 @@ for customer in selected_customers_HP:
         
         return Customer_Ev_Spring_Weekday
     
-    # Example usage with probabilities for each sheet
-    prob_1SPD = 0.4  
-    prob_2SPD = 0.3  
-    prob_3SPD = 0.3  
+    prob_1SPD = 0.2793  
+    prob_2SPD = 0.4441  
+    prob_3SPD = 0.2766  
     Customer_Ev_Spring_Weekday = select_and_sample_with_named_dataframe(prob_1SPD, prob_2SPD, prob_3SPD)
     Customer_Ev_Spring_Weekday.iloc[:, -1] = 0
     
@@ -1537,8 +1463,8 @@ for customer in selected_customers_HP:
         return Customer_Ev_Fall_Weekday
     
     # Example usage with probabilities for each sheet
-    prob_1FD = 0.5  
-    prob_2FD = 0.5  
+    prob_1FD = 0.6284  
+    prob_2FD = 0.3716  
     Customer_Ev_Fall_Weekday = select_and_sample_with_named_dataframe(prob_1FD, prob_2FD)
     Customer_Ev_Fall_Weekday.iloc[:, -1] = 0
     
@@ -1547,9 +1473,7 @@ for customer in selected_customers_HP:
         # Select a sheet based on the probabilities
         sheet_choice = np.random.choice(['EV_Winter_Weekdays1', 'EV_Winter_Weekdays2', 'EV_Winter_Weekdays3', 'EV_Winter_Weekdays4'], 
                                         p=[prob_1WD, prob_2WD, prob_3WD, prob_4WD])
-        
-        # Print the selected spreadsheet
-        # print(f"Selected Spreadsheet: {sheet_choice}")
+
         
         # Select the appropriate dataframe
         if sheet_choice == 'EV_Winter_Weekdays1':
@@ -1579,16 +1503,14 @@ for customer in selected_customers_HP:
         
         return Customer_Ev_Winter_Weekday
     
-    # Example usage with probabilities for each sheet
-    prob_1WD = 0.25  
-    prob_2WD = 0.25  
-    prob_3WD = 0.25  
-    prob_4WD = 0.25  
+    prob_1WD = 0.3887  
+    prob_2WD = 0.1841 
+    prob_3WD = 0.1765  
+    prob_4WD = 0.2507 
     Customer_Ev_Winter_Weekday = select_and_sample_with_named_dataframe(prob_1WD, prob_2WD, prob_3WD, prob_4WD)
     Customer_Ev_Winter_Weekday.iloc[:, -1] = 0
     
     
-
     # Slice the DataFrame into the specified seasonal ranges
     AMI_Winter1 = Customer_Profile_AMI.iloc[0:1416].copy()  # Rows 0 to 1415 (Winter 1)
     AMI_Spring = Customer_Profile_AMI.iloc[1416:3624].copy()  # Rows 1416 to 3623 (Spring)
@@ -1596,9 +1518,6 @@ for customer in selected_customers_HP:
     AMI_Fall = Customer_Profile_AMI.iloc[5832:8016].copy()  # Rows 5832 to 8015 (Fall)
     AMI_Winter2 = Customer_Profile_AMI.iloc[8016:8760].copy()  # Rows 8016 to 8759 (Winter 2)
     
- 
-    
-
     
     # Create a new DataFrame by repeating Customer_HP_Winter 59 times
     def create_repeated_customer_hp_winter(customer_hp_df, repeat_times):
@@ -1610,8 +1529,6 @@ for customer in selected_customers_HP:
     # Create a new DataFrame where Customer_HP_Winter is repeated 59 times
     Customer_W1 = create_repeated_customer_hp_winter(Customer_HP_Winter, 59)
     
-    # Display the shape of the new DataFrame to verify the operation
-    # print(f'Customer_W1 shape: {Customer_W1.shape}')
     
     # Function to add column 5 of AMI_Winter1 to column 3 of Customer_W1
     def add_columns(ami_df, customer_df):
@@ -1632,10 +1549,7 @@ for customer in selected_customers_HP:
     
     # Assuming AMI_Winter1 and Customer_W1 are already defined in the environment
     HP_Plus_AMI_W1 = add_columns(AMI_Winter1, Customer_W1)
-    
-    # Display the first few rows of the new DataFrame to verify the operation
-    # print(HP_Plus_AMI_W1.head())
-    
+
     
     def create_repeated_customer_hp_spring(customer_hp_df, repeat_times):
         # Repeat the Customer_HP_Spring data 'repeat_times' times
@@ -1669,7 +1583,6 @@ for customer in selected_customers_HP:
     HP_Plus_AMI_Spring = add_columns_spring(AMI_Spring, Customer_Spring)
     
     
-    
     # Create a new DataFrame by repeating Customer_HP_Summer 92 times
     def create_repeated_customer_hp_summer(customer_hp_df, repeat_times):
         # Repeat the Customer_HP_Summer data 'repeat_times' times
@@ -1679,9 +1592,6 @@ for customer in selected_customers_HP:
     # Assuming Customer_HP_Summer is already defined
     Customer_Summer = create_repeated_customer_hp_summer(Customer_HP_Summer, 92)
     
-    # Display the shape and first few rows of the new DataFrame to verify the operation
-    # print(f'Customer_Summer shape: {Customer_Summer.shape}')
-    # print(Customer_Summer.head())
     
     def add_columns_summer(ami_df, customer_df):
         # Reset indices to ensure proper alignment
@@ -1790,8 +1700,6 @@ for customer in selected_customers_HP:
     # Add a datetime column to HP_Plus_AMI_W1 starting from January 1st, 2023, as the first column
     HP_Plus_AMI_W1 = add_datetime_column_first(HP_Plus_AMI_W1)
     
-    # Display the first few rows of the DataFrame to verify the operation
-    # print(HP_Plus_AMI_W1.head())
     
     def add_datetime_column_first_spring(dataframe, start_date=None):
         if start_date is None:  
@@ -1806,8 +1714,7 @@ for customer in selected_customers_HP:
     # Add a datetime column to HP_Plus_AMI_Spring starting from March 1st, 2023, as the first column
     HP_Plus_AMI_Spring = add_datetime_column_first_spring(HP_Plus_AMI_Spring)
     
-    # Display the first few rows of the DataFrame to verify the operation
-    # print(HP_Plus_AMI_Spring.head())
+
     
     # Function to add a datetime column to represent each hour starting from June 1st, 2023, as the first column
     def add_datetime_column_first_summer(dataframe, start_date=None):
@@ -1822,9 +1729,6 @@ for customer in selected_customers_HP:
     
     # Add a datetime column to HP_Plus_AMI_Summer starting from June 1st, 2023, as the first column
     HP_Plus_AMI_Summer = add_datetime_column_first_summer(HP_Plus_AMI_Summer)
-    
-    # Display the first few rows of the DataFrame to verify the operation
-    # print(HP_Plus_AMI_Summer.head())
     
     
     # Function to add a datetime column to represent each hour starting from August 1st, 2023, as the first column
@@ -1841,8 +1745,6 @@ for customer in selected_customers_HP:
     # Add a datetime column to HP_Plus_AMI_Fall starting from August 1st, 2023, as the first column
     HP_Plus_AMI_Fall = add_datetime_column_first_fall(HP_Plus_AMI_Fall)
     
-    # Display the first few rows of the DataFrame to verify the operation
-    # print(HP_Plus_AMI_Fall.head())
     
     
     # Function to add a datetime column to represent each hour starting from December 1st, 2023, as the first column
@@ -1931,8 +1833,6 @@ for customer in selected_customers_HP:
     # Assuming Customer_Ev_Winter_Weekday and HP_Plus_AMI_W1 are already defined
     HP_Plus_AMI_W1_with_EV_weekends = add_ev_hp_columns_weekends(Customer_Ev_Winter_Weekday, HP_Plus_AMI_W1)
     
-    # Display the first few rows of the new DataFrame to verify the operation
-    # print(HP_Plus_AMI_W1_with_EV_weekends.head())
     
     
     # Function to add the columns together for weekdays in a given season
@@ -2045,8 +1945,6 @@ for customer in selected_customers_HP:
     # Assuming Customer_Profile_AMI and Customer_Total_Usage are already defined
     Customer_Total_Usage = rename_customer_column_from_profile(Customer_Total_Usage, Customer_Profile_AMI)
     
-    # Display the first few rows of the modified DataFrame to verify the operation
-    # print(Customer_Total_Usage.head())
     
     # Extract the customer name from the 5th column of Customer_Profile_AMI
     customer_name = Customer_Profile_AMI.columns[4]
@@ -2068,12 +1966,12 @@ for customer in selected_customers_HP:
 print(f"Aggregated Data with EVPenLevel {Pen_Level_EV_percentage} and HPPenLevel {Pen_Level_HP_percentage} Generated")
 
 #%% Define the output file path with the penetration level in the file name
-# output_file_path = f"output\Final Aggregated Data_EVPenLevel_{Pen_Level_EV_percentage} and HPPenLevel_{Pen_Level_HP_percentage}.xlsx"
+output_file_path = f"output\Final Aggregated Data_EVPenLevel_{Pen_Level_EV_percentage} and HPPenLevel_{Pen_Level_HP_percentage}.xlsx"
 
-# # Use pandas to export the DataFrame to an Excel file
-# Final_Aggregated_Data.to_excel(output_file_path, index=False)
+# Use pandas to export the DataFrame to an Excel file
+Final_Aggregated_Data.to_excel(output_file_path, index=False)
 
-# print(f"Data exported successfully to {output_file_path}")
+print(f"Data exported successfully to {output_file_path}")
 
 #%% Overloading evaluation
 
@@ -2134,8 +2032,6 @@ def delay_by_one_hour(date_str):
     except Exception as e:
         print(f"Error processing timestamp: {date_str}. Exception: {e}")
         return date_str  # Return original string if there's an error
-
-
 
 
 # Step 1: Find the maximum load and corresponding date (month, day, and hour) for each transformer
@@ -2216,40 +2112,10 @@ monthly_overload_df = pd.DataFrame(monthly_overload_info)
 # Save all data into one Excel file with multiple sheets
 merged_output_file = f'output/Transformer_Load_Analysis_Results_pen_level_{Pen_Level_EV_percentage} and {Pen_Level_HP_percentage}.xlsx'
 
-
-
-# Save all data into one Excel file with multiple sheets
-with pd.ExcelWriter(merged_output_file, engine='openpyxl') as writer:
+with pd.ExcelWriter(merged_output_file) as writer:
     max_load_df.to_excel(writer, sheet_name='Max Load per Transformer', index=False)
     annual_overload_df.to_excel(writer, sheet_name='Annual Overloads', index=False)
     monthly_overload_df.to_excel(writer, sheet_name='Monthly Overloads Breakdown', index=False)
-
-# Load the workbook to modify formatting
-wb = load_workbook(merged_output_file)
-
-# Define the red color gradient (light red → dark red)
-color_scale = ColorScaleRule(
-    start_type="num", start_value=0, start_color="FFFFFF",  # White for 0
-    mid_type="num", mid_value=10, mid_color="FF9999",       # Light Red for moderate values
-    end_type="num", end_value=100, end_color="FF0000"       # Dark Red for high values
-)
-
-# Function to apply conditional formatting to a specific worksheet and column range
-def apply_gradient_fill(ws, start_row, end_row, start_col, end_col):
-    col_range = f"{start_col}{start_row}:{end_col}{end_row}"
-    ws.conditional_formatting.add(col_range, color_scale)
-
-# Apply formatting to "Annual Overloads" sheet
-ws_annual = wb["Annual Overloads"]
-apply_gradient_fill(ws_annual, 2, ws_annual.max_row, "C", "E")  # Apply to Overloads > 100%, 120%, 140%
-
-# Apply formatting to "Monthly Overloads Breakdown" sheet
-ws_monthly = wb["Monthly Overloads Breakdown"]
-apply_gradient_fill(ws_monthly, 2, ws_monthly.max_row, "D", "F")  # Apply to Overloads > 100%, 120%, 140%
-
-# Save the updated workbook
-wb.save(merged_output_file)
-
     
     
 import matplotlib.pyplot as plt
