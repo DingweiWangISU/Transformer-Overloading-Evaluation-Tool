@@ -12,13 +12,27 @@
 # this tool in an automated fashion.
 #
 
+import argparse
 from eprc.tfoverload_tool import TFOverload_Tool
 
-def cli_main():
+def cli_main(args):
+    print("Running EPRC Transformer Overloading Evaluation Tool with...")
+    print("  AMI Data = " + args.amidata)
+    print("  TC Info  = " + args.tcinfo)
+    print("  EV Penetration: " + str(args.evpen) + "%")
+    print("  HP Penetration: " + str(args.hppen) + "%")
+
     tfot = TFOverload_Tool()
     tfot.whoami()
 
+# Actually do stuff when called directly.
 if __name__ == "__main__":
-    cli_main()
+    parser = argparse.ArgumentParser(description='This tool estimates which transformers will overload given some percentage of heat pump and electric vehicle load.')
+    parser.add_argument('--amidata', default='data/samples/AMI.xlsx', help='XLSX with a full year of hourly AMI data for all the customers')
+    parser.add_argument('--tcinfo', default='data/samples/TC.xlsx', help='XLSX with transformer specifications and transformer-customer connectivity')
+    parser.add_argument('--evpen', default=20, type=int, help='Percent Electric Vehicle Penetration')
+    parser.add_argument('--hppen', default=10, type=int, help='Percent Heat Pump Penetration')
+    cli_main(parser.parse_args())
+
 #
 # EOF
