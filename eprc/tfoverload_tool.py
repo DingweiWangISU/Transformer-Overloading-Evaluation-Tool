@@ -18,20 +18,28 @@ import numpy as np
 
 
 class TFOverload_Tool:
+    def __init__(self, amifile, tcfile, evpen, hppen, outfolder):
+        self.uuid         = uuid.uuid4()
+        self.amifile      = amifile
+        self.tcfile       = tcfile
+        self.evpen        = evpen
+        self.hppen        = hppen
+        self.outfolder    = outfolder
+        self.power_factor = 0.9
+
     def whoami(self):
         return str(self.uuid)
 
-    def __init__(self, amifile, tcfile, evpen, hppen, outfolder):
-        self.uuid = uuid.uuid4()
+    def run(self):
         #get_ipython().magic('reset -sf')
         warnings.filterwarnings("ignore")
         
         #%% Parameters
-        power_factor = 0.9
+        power_factor = self.power_factor
         
         # Define Penetration Levels as percentages
-        Pen_Level_EV_percentage = evpen  # Percentage of customers for EV
-        Pen_Level_HP_percentage = hppen  # Percentage of customers for HP
+        Pen_Level_EV_percentage = self.evpen  # Percentage of customers for EV
+        Pen_Level_HP_percentage = self.hppen  # Percentage of customers for HP
         
         #%% Data Validation Functions
         def validate_raw_tc(raw_tc_data):
@@ -173,8 +181,8 @@ class TFOverload_Tool:
         #if __name__ == "__main__":
         #raw_tc_path = "RAW_TC.xlsx"
         #raw_ami_path = "RAW_AMI.xlsx"
-        raw_tc_path  = tcfile
-        raw_ami_path = amifile
+        raw_tc_path  = self.tcfile
+        raw_ami_path = self.amifile
         
         raw_tc_data = pd.read_excel(raw_tc_path)
         raw_data = pd.read_excel(raw_ami_path)
@@ -1982,7 +1990,7 @@ class TFOverload_Tool:
         print(f"Aggregated Data with EVPenLevel {Pen_Level_EV_percentage} and HPPenLevel {Pen_Level_HP_percentage} Generated")
         
         #%% Define the output file path with the penetration level in the file name
-        output_file_path = f"{outfolder}/Final Aggregated Data_EVPenLevel_{Pen_Level_EV_percentage} and HPPenLevel_{Pen_Level_HP_percentage}.xlsx"
+        output_file_path = f"{self.outfolder}/Final Aggregated Data_EVPenLevel_{Pen_Level_EV_percentage} and HPPenLevel_{Pen_Level_HP_percentage}.xlsx"
         
         # Use pandas to export the DataFrame to an Excel file
         Final_Aggregated_Data.to_excel(output_file_path, index=False)
@@ -2126,7 +2134,7 @@ class TFOverload_Tool:
         
         
         # Save all data into one Excel file with multiple sheets
-        merged_output_file = f'{outfolder}/Transformer_Load_Analysis_Results_pen_level_{Pen_Level_EV_percentage} and {Pen_Level_HP_percentage}.xlsx'
+        merged_output_file = f'{self.outfolder}/Transformer_Load_Analysis_Results_pen_level_{Pen_Level_EV_percentage} and {Pen_Level_HP_percentage}.xlsx'
         
         with pd.ExcelWriter(merged_output_file) as writer:
             max_load_df.to_excel(writer, sheet_name='Max Load per Transformer', index=False)

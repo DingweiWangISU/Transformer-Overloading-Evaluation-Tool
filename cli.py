@@ -24,6 +24,7 @@ def cli_main(args):
     print("  Output Folder = " + args.output)
 
     tfot = TFOverload_Tool(args.amidata, args.tcinfo, args.evpen, args.hppen, args.output)
+    tfot.run()
     print(tfot.whoami())
 
 # Actually do stuff when called directly.
