@@ -38,8 +38,14 @@ class TFOverload_Tool:
         power_factor = self.power_factor
         
         # Define Penetration Levels as percentages
+        if self.evpen < 0 or self.evpen > 100:
+            raise Exception(f"EV Penetration percentage (--evpen) must be between 0 and 100. Passed value {self.evpen} was not.")
         Pen_Level_EV_percentage = self.evpen  # Percentage of customers for EV
+
+        if self.hppen < 0 or self.hppen > 100:
+            raise Exception(f"HP Penetration percentage (--hppen) must be between 0 and 100. Passed value {self.hppen} was not.")
         Pen_Level_HP_percentage = self.hppen  # Percentage of customers for HP
+
         
         #%% Data Validation Functions
         def validate_raw_tc(raw_tc_data):
