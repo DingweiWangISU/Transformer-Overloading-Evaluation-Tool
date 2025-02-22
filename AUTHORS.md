@@ -18,10 +18,14 @@ This is where your explain when the project started, for which client, and list 
 ## All other contributors and their affiliations:
 
 * Research IT, Iowa State University - Ames, IA (USA)
+  https://research.it.iastate.edu/
 
 
 ## Special thanks to
 
 * Electric Power Research Center, Iowa State University - Ames, IA (USA)
   https://www.ece.iastate.edu/eprc/
+
+* Department of Electrical and Computer Engineering, Iowa State University - Ames, IA (USA)
+  https://www.ece.iastate.edu/
 
