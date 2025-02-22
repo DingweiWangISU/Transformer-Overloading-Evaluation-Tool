@@ -12,8 +12,11 @@
 # this tool in an automated fashion.
 #
 
+from eprc.tfoverload_tool import TFOverload_Tool
+
 def cli_main():
-    print("placeholder")
+    tfot = TFOverload_Tool()
+    tfot.whoami()
 
 if __name__ == "__main__":
     cli_main()
