@@ -5,7 +5,7 @@
 #
 
 # Load our environment.
-export APP_VENV=app-venv
+source common.sh
 if [ ! -d "${APP_VENV}" ]; then
   echo "Didn't find the python virtual environment (${APP_VENV}). Run ./mkvenv.sh"
   exit 1

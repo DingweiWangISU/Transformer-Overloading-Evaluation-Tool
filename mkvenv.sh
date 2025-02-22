@@ -4,7 +4,8 @@
 # a python virtual environment that can be used.
 #
 
-export APP_VENV=app-venv
+# Only create if there isn't an existing ${APP_VENV}
+source common.sh
 if [ ! -d "${APP_VENV}" ]; then
   python3 -m venv ${APP_VENV}
   source ${APP_VENV}/bin/activate
