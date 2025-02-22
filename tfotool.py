@@ -201,35 +201,35 @@ HP_Summer= pd.read_excel("data/hp/summer_centroid.xlsx")
 HP_Spring= pd.read_excel("data/hp/spring_centroid.xlsx")
 
 
-EV_Winter_Weekend1= pd.read_excel("EV data for Weekends/Weekends_Winter_cluster_1.xlsx")
-EV_Winter_Weekend2= pd.read_excel("EV data for Weekends/Weekends_Winter_cluster_2.xlsx")
+EV_Winter_Weekend1= pd.read_excel("data/ev/weekends/Weekends_Winter_cluster_1.xlsx")
+EV_Winter_Weekend2= pd.read_excel("data/ev/weekends/Weekends_Winter_cluster_2.xlsx")
 
-EV_Summer_Weekend1=pd.read_excel("EV data for Weekends/Weekends_Summer_cluster_1.xlsx")
-EV_Summer_Weekend2=pd.read_excel("EV data for Weekends/Weekends_Summer_cluster_2.xlsx")
-EV_Summer_Weekend3=pd.read_excel("EV data for Weekends/Weekends_Summer_cluster_3.xlsx")
+EV_Summer_Weekend1=pd.read_excel("data/ev/weekends/Weekends_Summer_cluster_1.xlsx")
+EV_Summer_Weekend2=pd.read_excel("data/ev/weekends/Weekends_Summer_cluster_2.xlsx")
+EV_Summer_Weekend3=pd.read_excel("data/ev/weekends/Weekends_Summer_cluster_3.xlsx")
 
-EV_Spring_Weekend1=pd.read_excel("EV data for Weekends/Weekends_Spring_cluster_1.xlsx")
-EV_Spring_Weekend2=pd.read_excel("EV data for Weekends/Weekends_Spring_cluster_2.xlsx")
+EV_Spring_Weekend1=pd.read_excel("data/ev/weekends/Weekends_Spring_cluster_1.xlsx")
+EV_Spring_Weekend2=pd.read_excel("data/ev/weekends/Weekends_Spring_cluster_2.xlsx")
 
-EV_Fall_Weekend1=pd.read_excel("EV data for Weekends/Weekends_Fall_cluster_1.xlsx")
-EV_Fall_Weekend2=pd.read_excel("EV data for Weekends/Weekends_Fall_cluster_2.xlsx")
+EV_Fall_Weekend1=pd.read_excel("data/ev/weekends/Weekends_Fall_cluster_1.xlsx")
+EV_Fall_Weekend2=pd.read_excel("data/ev/weekends/Weekends_Fall_cluster_2.xlsx")
 
 
-EV_Winter_Weekdays1=pd.read_excel("EV data for Weekdays/Weekdays_Winter_cluster_1.xlsx")
-EV_Winter_Weekdays2=pd.read_excel("EV data for Weekdays/Weekdays_Winter_cluster_2.xlsx")
-EV_Winter_Weekdays3=pd.read_excel("EV data for Weekdays/Weekdays_Winter_cluster_3.xlsx")
-EV_Winter_Weekdays4=pd.read_excel("EV data for Weekdays/Weekdays_Winter_cluster_4.xlsx")
+EV_Winter_Weekdays1=pd.read_excel("data/ev/weekdays/Weekdays_Winter_cluster_1.xlsx")
+EV_Winter_Weekdays2=pd.read_excel("data/ev/weekdays/Weekdays_Winter_cluster_2.xlsx")
+EV_Winter_Weekdays3=pd.read_excel("data/ev/weekdays/Weekdays_Winter_cluster_3.xlsx")
+EV_Winter_Weekdays4=pd.read_excel("data/ev/weekdays/Weekdays_Winter_cluster_4.xlsx")
 
-EV_Summer_Weekdays1=pd.read_excel("EV data for Weekdays/Weekdays_Summer_cluster_1.xlsx")
-EV_Summer_Weekdays2=pd.read_excel("EV data for Weekdays/Weekdays_Summer_cluster_2.xlsx")
-EV_Summer_Weekdays3=pd.read_excel("EV data for Weekdays/Weekdays_Summer_cluster_3.xlsx")
+EV_Summer_Weekdays1=pd.read_excel("data/ev/weekdays/Weekdays_Summer_cluster_1.xlsx")
+EV_Summer_Weekdays2=pd.read_excel("data/ev/weekdays/Weekdays_Summer_cluster_2.xlsx")
+EV_Summer_Weekdays3=pd.read_excel("data/ev/weekdays/Weekdays_Summer_cluster_3.xlsx")
 
-EV_Spring_Weekdays1=pd.read_excel("EV data for Weekdays/Weekdays_Spring_cluster_1.xlsx")
-EV_Spring_Weekdays2=pd.read_excel("EV data for Weekdays/Weekdays_Spring_cluster_2.xlsx")
-EV_Spring_Weekdays3=pd.read_excel("EV data for Weekdays/Weekdays_Spring_cluster_3.xlsx")
+EV_Spring_Weekdays1=pd.read_excel("data/ev/weekdays/Weekdays_Spring_cluster_1.xlsx")
+EV_Spring_Weekdays2=pd.read_excel("data/ev/weekdays/Weekdays_Spring_cluster_2.xlsx")
+EV_Spring_Weekdays3=pd.read_excel("data/ev/weekdays/Weekdays_Spring_cluster_3.xlsx")
 
-EV_Fall_Weekdays1=pd.read_excel("EV data for Weekdays/Weekdays_Fall_cluster_1.xlsx")
-EV_Fall_Weekdays2=pd.read_excel("EV data for Weekdays/Weekdays_Fall_cluster_2.xlsx")
+EV_Fall_Weekdays1=pd.read_excel("data/ev/weekdays/Weekdays_Fall_cluster_1.xlsx")
+EV_Fall_Weekdays2=pd.read_excel("data/ev/weekdays/Weekdays_Fall_cluster_2.xlsx")
 
 
 
