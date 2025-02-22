@@ -24,11 +24,11 @@ def cli_main(args):
     print("  Output Folder = " + args.output)
 
     tfot = TFOverload_Tool(args.amidata, args.tcinfo, args.evpen, args.hppen, args.output)
+    print("  Instance UUID = " + tfot.whoami())
     try: 
         tfot.run()
     except Exception as e:
-        print(f"!! ERROR: {e}")
-    print(tfot.whoami())
+        print(f"! ERROR: {e}")
 
 # Actually do stuff when called directly.
 if __name__ == "__main__":
