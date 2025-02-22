@@ -1,9 +1,9 @@
-# ISU EPRC Transformer Overloading Evaluation Tool
+# Transformer Overloading Evaluation Tool
 
 The Transformer Overloading Evaluation Tool provides guidance for identifying transformers that would overload based on existing transformer and customer information given specified heat pump (HP) and electric vehicle (EV) pentration levels.
 
 
-## Data Preparation: You need to prepare 2 Excel files in the “.xlsx” extension:
+## Two Excel files in the “.xlsx” extension are required for usage:
     1.	AMI_Data.xlsx
     2.	transformer_customer_info.xlsx
 
@@ -50,6 +50,6 @@ This repository contains a few helper scripts for installation/deployment:
 
 ## Additional Documentation
 
-Refer to the `docs` subfolder for additional documentation on the tool.
-
+* Refer to the [docs](docs) subfolder for additional documentation.
+* Refer to [AUTHORS.md](AUTHORS.md) for citation information and developer contact details.
 
