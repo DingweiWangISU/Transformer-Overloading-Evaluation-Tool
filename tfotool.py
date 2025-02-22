@@ -195,10 +195,10 @@ if __name__ == "__main__":
 # AMI_Hourly = pd.read_excel("AMI_Data.xlsx")
 AMI_Hourly = transformed_ami_data
 
-HP_Fall= pd.read_excel("Heat pump data/fall_centroid.xlsx")
-HP_Winter= pd.read_excel("Heat pump data/winter_centroid.xlsx")
-HP_Summer= pd.read_excel("Heat pump data/summer_centroid.xlsx")
-HP_Spring= pd.read_excel("Heat pump data/spring_centroid.xlsx")
+HP_Fall= pd.read_excel("data/hp/fall_centroid.xlsx")
+HP_Winter= pd.read_excel("data/hp/winter_centroid.xlsx")
+HP_Summer= pd.read_excel("data/hp/summer_centroid.xlsx")
+HP_Spring= pd.read_excel("data/hp/spring_centroid.xlsx")
 
 
 EV_Winter_Weekend1= pd.read_excel("EV data for Weekends/Weekends_Winter_cluster_1.xlsx")
