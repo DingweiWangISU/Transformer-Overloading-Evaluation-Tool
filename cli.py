@@ -33,7 +33,7 @@ if __name__ == "__main__":
     parser.add_argument('--tcinfo', default='data/samples/TC.xlsx', help='XLSX with transformer specifications and transformer-customer connectivity (default: %(default)s)')
     parser.add_argument('--evpen', default=20, type=int, help='Percent Electric Vehicle Penetration (default: %(default)s)')
     parser.add_argument('--hppen', default=10, type=int, help='Percent Heat Pump Penetration (default: %(default)s)')
-    parser.add_argument('--output', default='output/', help='Folder to store output (default: %(default)s)')
+    parser.add_argument('--output', default='output', help='Folder to store output (default: %(default)s)')
     cli_main(parser.parse_args())
 
 #

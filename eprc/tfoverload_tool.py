@@ -1982,7 +1982,7 @@ class TFOverload_Tool:
         print(f"Aggregated Data with EVPenLevel {Pen_Level_EV_percentage} and HPPenLevel {Pen_Level_HP_percentage} Generated")
         
         #%% Define the output file path with the penetration level in the file name
-        output_file_path = f"{outfolder}\Final Aggregated Data_EVPenLevel_{Pen_Level_EV_percentage} and HPPenLevel_{Pen_Level_HP_percentage}.xlsx"
+        output_file_path = f"{outfolder}/Final Aggregated Data_EVPenLevel_{Pen_Level_EV_percentage} and HPPenLevel_{Pen_Level_HP_percentage}.xlsx"
         
         # Use pandas to export the DataFrame to an Excel file
         Final_Aggregated_Data.to_excel(output_file_path, index=False)
