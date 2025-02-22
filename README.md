@@ -1,4 +1,4 @@
-# Transformer-Overloading-Evaluation-Tool Instruction Manual
+# Transformer-Overloading-Evaluation-Tool
 
 This documentation provides usage instructions for the transformer overloading evaluation algorithm with selected heat pump and EV penetration levels.
 
@@ -9,7 +9,7 @@ This documentation provides usage instructions for the transformer overloading e
 ### AMI_Data.xlsx
 This is the file to store one-year hourly AMI data for all the customers in a feeder. The format of the file is as follows: 
  
-Headers: Date, Hour, Day Type, Season, Customer X.
+**Headers**: Date, Hour, Day Type, Season, Customer X.
 
 #### Data Format 
 - Date: YYYY-MM-DD or MM/DD/YYYY
@@ -21,7 +21,7 @@ Headers: Date, Hour, Day Type, Season, Customer X.
 ### transformer_customer_info.xlsx
 This is the file to store transformer specifications and transformer-customer connectivity in a feeder. The format of the file is as follows: 
  
-Headers: Transformer, Transformer Rating (kVA), Customer Indexes, Transformer Rating (kW)
+**Headers**: Transformer, Transformer Rating (kVA), Customer Indexes, Transformer Rating (kW)
 
 #### Data Format
 - Transformer: transformer labels.
@@ -41,5 +41,16 @@ Next, open Transformer overloading.py. Change the Penetration Level to the file 
  
 Run the rest of the code, you will get an Excel file in the output folder called “Transformer_Load_Analysis_Results_pen_level_{Pen_Level_EV} and {Pen_Level_HP}.xlsx” with your specified penetration levels.
 This file contains three sheets. The first one is the maximum load per transformer over a year. The second one is the count of overloads per transformer over a year. The third one is the monthly overload breakdown for each transformer.
+
+## Installation / Deployment
+
+This repository contains a few helper scripts for installation/deployment:
+* `mkvenv.sh` will create a python virtual environment with the necessary packages.
+* `run.sh` will launch the web interface for the application.
+* `python3 cli.py` can be used to run the application via the command line (no web interface needed).
+
+## Additional Documentation
+
+Refer to the `docs` subfolder for additional documentation on the tool.
 
 
