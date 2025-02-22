@@ -14,6 +14,8 @@ else
 fi
 
 # Run it!
+echo ""
+echo "Control-C to exit when done."
 gunicorn --config gunicorn.conf.py web:app
 
 #
