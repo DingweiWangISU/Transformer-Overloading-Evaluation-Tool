@@ -22,4 +22,6 @@ This is where your explain when the project started, for which client, and list 
 
 ## Special thanks to
 
-* Iowa!
+* Electric Power Research Center, Iowa State University - Ames, IA (USA)
+  https://www.ece.iastate.edu/eprc/
+
