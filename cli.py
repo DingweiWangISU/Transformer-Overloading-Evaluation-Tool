@@ -21,6 +21,7 @@ def cli_main(args):
     print("  TC Info  = " + args.tcinfo)
     print("  EV Penetration: " + str(args.evpen) + "%")
     print("  HP Penetration: " + str(args.hppen) + "%")
+    print("  Output Folder = " + args.output)
 
     tfot = TFOverload_Tool()
     tfot.whoami()
@@ -32,6 +33,7 @@ if __name__ == "__main__":
     parser.add_argument('--tcinfo', default='data/samples/TC.xlsx', help='XLSX with transformer specifications and transformer-customer connectivity')
     parser.add_argument('--evpen', default=20, type=int, help='Percent Electric Vehicle Penetration')
     parser.add_argument('--hppen', default=10, type=int, help='Percent Heat Pump Penetration')
+    parser.add_argument('--output', default='output/', help='Folder to store output file(s)')
     cli_main(parser.parse_args())
 
 #
