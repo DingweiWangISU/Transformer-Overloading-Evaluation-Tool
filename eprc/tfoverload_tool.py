@@ -21,7 +21,7 @@ class TFOverload_Tool:
     def whoami(self):
         return str(self.uuid)
 
-    def __init__(self, amifile, tcfile, evpen, hppen):
+    def __init__(self, amifile, tcfile, evpen, hppen, outfolder):
         self.uuid = uuid.uuid4()
         #get_ipython().magic('reset -sf')
         warnings.filterwarnings("ignore")
@@ -1982,13 +1982,13 @@ class TFOverload_Tool:
         print(f"Aggregated Data with EVPenLevel {Pen_Level_EV_percentage} and HPPenLevel {Pen_Level_HP_percentage} Generated")
         
         #%% Define the output file path with the penetration level in the file name
-        output_file_path = f"output\Final Aggregated Data_EVPenLevel_{Pen_Level_EV_percentage} and HPPenLevel_{Pen_Level_HP_percentage}.xlsx"
+        output_file_path = f"{outfolder}\Final Aggregated Data_EVPenLevel_{Pen_Level_EV_percentage} and HPPenLevel_{Pen_Level_HP_percentage}.xlsx"
         
         # Use pandas to export the DataFrame to an Excel file
         Final_Aggregated_Data.to_excel(output_file_path, index=False)
         
         print(f"Data exported successfully to {output_file_path}")
-        
+
         #%% Overloading evaluation
         
         # Load both files
@@ -2126,7 +2126,7 @@ class TFOverload_Tool:
         
         
         # Save all data into one Excel file with multiple sheets
-        merged_output_file = f'output/Transformer_Load_Analysis_Results_pen_level_{Pen_Level_EV_percentage} and {Pen_Level_HP_percentage}.xlsx'
+        merged_output_file = f'{outfolder}/Transformer_Load_Analysis_Results_pen_level_{Pen_Level_EV_percentage} and {Pen_Level_HP_percentage}.xlsx'
         
         with pd.ExcelWriter(merged_output_file) as writer:
             max_load_df.to_excel(writer, sheet_name='Max Load per Transformer', index=False)
