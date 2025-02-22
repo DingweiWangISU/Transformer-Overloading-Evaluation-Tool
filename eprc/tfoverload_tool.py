@@ -47,14 +47,14 @@ class TFOverload_Tool:
             
             # Check headers
             if set(raw_tc_data.columns) != required_headers:
-                sys.exit(f"Error: RAW_TC.xlsx must contain headers: {required_headers}. Found: {set(raw_tc_data.columns)}. Fix and re-upload.")
+                raise Exception(f"RAW_TC.xlsx must contain headers: {required_headers}. Found: {set(raw_tc_data.columns)}. Fix and re-upload.")
             
             # Check for missing values in required columns
             missing_values = raw_tc_data.isnull().sum()
             missing_cols = missing_values[missing_values > 0].index.tolist()
             if missing_cols:
                 missing_rows = raw_tc_data[missing_cols].isnull().any(axis=1)
-                sys.exit(f"Error: Missing values found in columns {missing_cols} at rows {list(missing_rows[missing_rows].index)}. Fix and re-upload.")
+                raise Exception(f"Missing values found in columns {missing_cols} at rows {list(missing_rows[missing_rows].index)}. Fix and re-upload.")
         
             # Convert MTR_ID and XFMR_ID to string for consistency
             raw_tc_data['MTR_ID'] = raw_tc_data['MTR_ID'].astype(str)
@@ -70,7 +70,7 @@ class TFOverload_Tool:
             
             invalid_xfrm_rows = raw_tc_data[~raw_tc_data['XFRM_SIZE'].apply(valid_transformer_size)].index.tolist()
             if invalid_xfrm_rows:
-                sys.exit(f"Error: Invalid XFRM_SIZE values found at rows {invalid_xfrm_rows}. Must be a positive number or in format xx_1PL, xx_xx_2PL, etc. Fix and re-upload.")
+                raise Exception(f"Invalid XFRM_SIZE values found at rows {invalid_xfrm_rows}. Must be a positive number or in format xx_1PL, xx_xx_2PL, etc. Fix and re-upload.")
             
             return set(raw_tc_data['MTR_ID'])
         
@@ -78,29 +78,29 @@ class TFOverload_Tool:
             
             # Check headers
             if raw_ami_data.columns[0] != "Time":
-                sys.exit(f"Error: The first column in RAW_AMI.xlsx must be 'Time'. Found: '{raw_ami_data.columns[0]}'. Fix and re-upload.")
+                raise Exception(f"The first column in RAW_AMI.xlsx must be 'Time'. Found: '{raw_ami_data.columns[0]}'. Fix and re-upload.")
             
             # Check if all meter IDs appear in RAW_TC.xlsx
             missing_mtr_ids = set(raw_ami_data.columns[1:]) - valid_mtr_ids
             if missing_mtr_ids:
-                sys.exit(f"Error: The following meter IDs in RAW_AMI.xlsx are missing from RAW_TC.xlsx: {missing_mtr_ids}. Fix and re-upload.")
+                raise Exception(f"The following meter IDs in RAW_AMI.xlsx are missing from RAW_TC.xlsx: {missing_mtr_ids}. Fix and re-upload.")
             
             # Check for missing values
             missing_values = raw_ami_data.isnull().sum()
             missing_cols = missing_values[missing_values > 0].index.tolist()
             if missing_cols:
                 missing_rows = raw_ami_data[missing_cols].isnull().any(axis=1)
-                sys.exit(f"Error: Missing values found in columns {missing_cols} at rows {list(missing_rows[missing_rows].index)}. Fix and re-upload.")
+                raise Exception(f"Missing values found in columns {missing_cols} at rows {list(missing_rows[missing_rows].index)}. Fix and re-upload.")
         
             # Check time format and hourly resolution
             raw_ami_data['Time'] = pd.to_datetime(raw_ami_data['Time'], errors='coerce')
             if raw_ami_data['Time'].isna().any():
                 invalid_rows = raw_ami_data[raw_ami_data['Time'].isna()].index.tolist()
-                sys.exit(f"Error: Invalid time format in RAW_AMI.xlsx at rows {invalid_rows}. Ensure the 'Time' column follows a consistent datetime format.")
+                raise Exception(f"Invalid time format in RAW_AMI.xlsx at rows {invalid_rows}. Ensure the 'Time' column follows a consistent datetime format.")
             
             # Check 8760 rows constraint
             if len(raw_ami_data) != 8760:
-                sys.exit(f"Error: RAW_AMI.xlsx must contain 8760 rows of data (excluding header). Found: {len(raw_ami_data)} rows. Fix and re-upload.")
+                raise Exception(f"RAW_AMI.xlsx must contain 8760 rows of data (excluding header). Found: {len(raw_ami_data)} rows. Fix and re-upload.")
             
             return raw_ami_data
         

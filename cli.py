@@ -24,7 +24,10 @@ def cli_main(args):
     print("  Output Folder = " + args.output)
 
     tfot = TFOverload_Tool(args.amidata, args.tcinfo, args.evpen, args.hppen, args.output)
-    tfot.run()
+    try: 
+        tfot.run()
+    except Exception as e:
+        print(f"!! ERROR: {e}")
     print(tfot.whoami())
 
 # Actually do stuff when called directly.
