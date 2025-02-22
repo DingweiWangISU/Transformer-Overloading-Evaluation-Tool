@@ -1,5 +1,6 @@
-flask
 numpy
 pandas
 ipython
+flask
+wtforms
 gunicorn
