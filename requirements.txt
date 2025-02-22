@@ -2,5 +2,6 @@ numpy
 pandas
 ipython
 flask
+flask-simple-captcha
 wtforms
 gunicorn
