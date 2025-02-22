@@ -23,7 +23,7 @@ def cli_main(args):
     print("  HP Penetration: " + str(args.hppen) + "%")
     print("  Output Folder = " + args.output)
 
-    tfot = TFOverload_Tool()
+    tfot = TFOverload_Tool(args.amidata, args.tcinfo, args.evpen, args.hppen)
     print(tfot.whoami())
 
 # Actually do stuff when called directly.
