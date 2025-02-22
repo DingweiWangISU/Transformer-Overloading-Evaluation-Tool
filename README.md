@@ -16,7 +16,11 @@ This is the file to store one-year hourly AMI data for all the customers in a fe
 - Date: YYYY-MM-DD or MM/DD/YYYY
 - Hour: Hour of the day from the data (0 to 23)
 - Day type: Specify if the date is a weekday or weekend
-- Season: season based on current date. Spring – Mar, Apr, May; Summer – June, July, Aug; Fall – Sep, Oct, Nov; Winter – Dec, Jan, Feb.
+- Season: season based on current date.
+  - Spring – Mar, Apr, May;
+  - Summer – June, July, Aug;
+  - Fall – Sep, Oct, Nov;
+  - Winter – Dec, Jan, Feb.
 - Customer X: customer AMI data, from customer 1 to customer n.
 
 ### transformer_customer_info.xlsx
