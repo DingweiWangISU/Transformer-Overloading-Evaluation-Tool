@@ -1,6 +1,7 @@
-# Transformer-Overloading-Evaluation-Tool
+# ISU EPRC Transformer Overloading Evaluation Tool
 
-This documentation provides usage instructions for the transformer overloading evaluation algorithm with selected heat pump and EV penetration levels.
+The Transformer Overloading Evaluation Tool provides guidance for identifying transformers that would overload based on existing transformer and customer information given specified heat pump (HP) and electric vehicle (EV) pentration levels.
+
 
 ## Data Preparation: You need to prepare 2 Excel files in the “.xlsx” extension:
     1.	AMI_Data.xlsx
@@ -34,20 +35,18 @@ This is the file to store transformer specifications and transformer-customer co
 First, open Customer profile Gen_EV_HP.py for aggregated load profile generation. You need to specify the penetration level of the EV and heat pump (They can be zero).
  
 Note that this is the number of customers, not the percentage.
-Run the rest of the code, and you will get a file in the output folder called “Final Aggregated Data_EVPenLevel_{Pen_Level_EV} and HPPenLevel_{Pen_Level_HP}.xlsx
-The value of {Pen_Level_EV} and {Pen_Level_HP} will be the same as the one you set. You may change the penetration level and generate multiple profiles.
+Run the rest of the code, and you will get a file in the output folder called `Final Aggregated Data_EVPenLevel_{Pen_Level_EV} and HPPenLevel_{Pen_Level_HP}.xlsx`. The value of {Pen_Level_EV} and {Pen_Level_HP} will be the same as the one you set. You may change the penetration level and generate multiple profiles.
 
 Next, open Transformer overloading.py. Change the Penetration Level to the file that you generated in the previous step.
  
-Run the rest of the code, you will get an Excel file in the output folder called “Transformer_Load_Analysis_Results_pen_level_{Pen_Level_EV} and {Pen_Level_HP}.xlsx” with your specified penetration levels.
-This file contains three sheets. The first one is the maximum load per transformer over a year. The second one is the count of overloads per transformer over a year. The third one is the monthly overload breakdown for each transformer.
+Run the rest of the code, you will get an Excel file in the output folder called `Transformer_Load_Analysis_Results_pen_level_{Pen_Level_EV} and {Pen_Level_HP}.xlsx` with your specified penetration levels. This file contains three sheets. The first one is the maximum load per transformer over a year. The second one is the count of overloads per transformer over a year. The third one is the monthly overload breakdown for each transformer.
 
 ## Installation / Deployment
 
 This repository contains a few helper scripts for installation/deployment:
 * `mkvenv.sh` will create a python virtual environment with the necessary packages.
-* `run.sh` will launch the web interface for the application.
 * `python3 cli.py` can be used to run the application via the command line (no web interface needed).
+* `run.sh` will start a gunicorn web server on port 8080. Once running, you can go to [http://localhost:8080/](http://localhost:8080/) to access the web interface for the application.
 
 ## Additional Documentation
 
