@@ -9,7 +9,7 @@ class TFOverload_Tool:
         self.uuid = uuid.uuid4()
 
     def whoami(self):
-        print(self.uuid)
+        return str(self.uuid)
 
 #
 # EOF

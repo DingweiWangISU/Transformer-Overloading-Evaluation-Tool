@@ -24,7 +24,7 @@ def cli_main(args):
     print("  Output Folder = " + args.output)
 
     tfot = TFOverload_Tool()
-    tfot.whoami()
+    print(tfot.whoami())
 
 # Actually do stuff when called directly.
 if __name__ == "__main__":
