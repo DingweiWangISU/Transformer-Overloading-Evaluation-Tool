@@ -5,10 +5,15 @@
 #
 
 export APP_VENV=app-venv
-python3 -m venv ${APP_VENV}
-source ${APP_VENV}/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
+if [ ! -d "${APP_VENV}" ]; then
+  python3 -m venv ${APP_VENV}
+  source ${APP_VENV}/bin/activate
+  pip install --upgrade pip
+  pip install -r requirements.txt
+else
+  echo "Existing python virtual environment (${APP_VENV}) found. Delete and run ./mkvenv.sh to recreate."
+  exit 1
+fi
 
 echo "Run source ${APP_VENV}/bin/activate to use the virtual environment."
 
