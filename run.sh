@@ -16,6 +16,7 @@ fi
 # Run it!
 echo ""
 echo "Control-C to exit when done."
+# web:app means run Flask application called "app" in "web.py".
 gunicorn --config gunicorn.conf.py web:app
 
 #
