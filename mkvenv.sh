@@ -16,7 +16,7 @@ else
   exit 1
 fi
 
-echo "Run source ${APP_VENV}/bin/activate to use the virtual environment."
+echo "Run [source ${APP_VENV}/bin/activate] to use the virtual environment."
 
 #
 # EOF

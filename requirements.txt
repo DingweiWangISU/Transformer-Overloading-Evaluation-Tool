@@ -7,3 +7,4 @@ flask
 flask-simple-captcha
 wtforms
 gunicorn
+pycodestyle

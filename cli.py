@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 #
 # The cli.py file provides a method to invoke the
-# EPRC Transformer Overloading Evaluation Tool 
+# EPRC Transformer Overloading Evaluation Tool
 # without loading the full web application.
 #
-# This is useful for debugging the underlying 
-# application code without dealing with a full 
+# This is useful for debugging the underlying
+# application code without dealing with a full
 # web service framework.
 #
 # It's also beneficial for anyone trying to use
@@ -14,6 +14,7 @@
 
 import argparse
 from eprc.tfoverload_tool import TFOverload_Tool
+
 
 def cli_main(args):
     print("Running EPRC Transformer Overloading Evaluation Tool with...")
@@ -25,10 +26,11 @@ def cli_main(args):
 
     tfot = TFOverload_Tool(args.amidata, args.tcinfo, args.evpen, args.hppen, args.output)
     print("  Instance UUID = " + tfot.whoami())
-    try: 
+    try:
         tfot.run()
     except Exception as e:
         print(f"! ERROR: {e}")
+
 
 # Actually do stuff when called directly.
 if __name__ == "__main__":
