@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Transformer Overloading Evaluation Tool{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <p>The EPRC Tranformer Overloading Evaluation Tool can be used to determine which transformers are likely to overload given your existing infrastructure and estimated heat pump (HP) and electric vehcile (EV) penetration.</p>
+  <p>
+    To use this tool, please prepare two files:
+    <ul>
+      <li><pre>AMI-Data.xlsx</pre> - one year of hourly AMI data for all customers in the feeder</li>
+      <li><pre>TFC-Info.xlsx</pre> - transformer specifications and transformer-customer connectivity in a feeder</li>
+    </ul>
+    Click on the filenames above to download a sample file. Details on the format can be found...
+  </p>
+  <form method="post">
+    <input type="submit" value="Let's Begin">
+  </form>
+{% endblock %}

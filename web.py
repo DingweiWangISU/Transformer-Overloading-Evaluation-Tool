@@ -10,7 +10,8 @@ app = Flask(__name__)
 
 @app.route("/")
 def landing_page():
-    return "inspector"
+    return render_template("landing.html")
+    #return "inspector"
 
 # 
 #tfot = TFOverload_Tool()

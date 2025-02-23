@@ -1,0 +1,5 @@
+User-agent: *  
+Allow: /
+Disallow: /?s=
+Disallow: /*.txt$
+Disallow: /*.md$
