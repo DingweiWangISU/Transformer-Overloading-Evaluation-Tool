@@ -16,8 +16,11 @@
     <link href="https://cdn.theme.iastate.edu/favicon/apple-touch-icon.png" rel="icon">
     <!-- Site Specific CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% include 'branding-head.html' %}
   </head>
   <body class="home page-template page-template-page-templates page-template-template-sidebar page-template-page-templatestemplate-sidebar-php page page-id-6">
+    {% include 'branding-header.html' %}
+    {% include 'branding-nav.html' %}
     <!-- Main Page Content -->
     <main role="main" id="main-content" class="">
       <div class="container">
@@ -33,5 +36,6 @@
       </div>
       <!-- script src="{{ url_for('static', filename='index.js') }}"></script -->
     </main>
+    {% include 'branding-footer.html' %}
   </body>
 </html>
