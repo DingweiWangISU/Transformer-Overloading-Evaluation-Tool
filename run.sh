@@ -14,8 +14,9 @@ else
 fi
 
 # Run it!
-echo ""
+echo "Running gunicorn for web app."
 echo "Control-C to exit when done."
+echo ""
 # web:app means run Flask application called "app" in "web.py".
 gunicorn --config gunicorn.conf.py web:app
 
