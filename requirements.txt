@@ -4,7 +4,10 @@ openpyxl
 matplotlib
 ipython
 flask
+flask_session
 flask-simple-captcha
 wtforms
+werkzeug
+cachelib
 gunicorn
 pycodestyle
