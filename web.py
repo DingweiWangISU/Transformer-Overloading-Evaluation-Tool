@@ -8,11 +8,16 @@
 #  - WA_ISU_BRANDING
 #
 import os, uuid
-from werkzeug.utils import secure_filename
 from eprc.tfoverload_tool import TFOverload_Tool
 from flask import Flask, flash, request, render_template, session
 from flask_session import Session
 from cachelib.file import FileSystemCache
+from flask_wtf import FlaskForm, CSRFProtect
+from flask_wtf.file import FileField, FileRequired, FileAllowed
+from werkzeug.utils import secure_filename
+from wtforms import StringField, IntegerField, HiddenField, SubmitField
+from wtforms.validators import InputRequired, NumberRange, Regexp
+from flask_session_captcha import FlaskSessionCaptcha
 
 
 # Start the web application
@@ -25,28 +30,47 @@ app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_USE_SIGNER'] = True
 app.config['SESSION_TYPE'] = 'cachelib'
 app.config['SESSION_SERIALIZATION_FORMAT'] = 'json'
-app.config['SESSION_FILE_DIR'] = f"{app.config['UPLOAD_FOLDER']}/sessions"
+app.config['SESSION_FILE_DIR'] = os.path.join(app.config['UPLOAD_FOLDER'], 'sessions')
 app.config['SESSION_CACHELIB'] = FileSystemCache(threshold=512, cache_dir=app.config['SESSION_FILE_DIR'])
 Session(app)
 
+# Configure the Captcha
+app.config['CAPTCHA_ENABLE'] = True
+app.config['CAPTCHA_LENGTH'] = 5
+app.config['CAPTCHA_WIDTH'] = 200
+app.config['CAPTCHA_HEIGHT'] = 160
+# app.config['CAPTCHA_LOG'] = False # log information to terminal
+app.config['CAPTCHA_INCLUDE_ALPHABET'] = True
+app.config['CAPTCHA_INCLUDE_NUMERIC'] = True
+captcha = FlaskSessionCaptcha(app)
+
 # Misc settings
+csrf = CSRFProtect(app)
 ALLOWED_EXTENSIONS = {'xlsx'}
 USE_ISU_BRANDING = True if os.getenv('WA_ISU_BRANDING', default='T') == "T" else False
+
+
+# Define the main document form.
+class TFOTForm(FlaskForm):
+    penetration_ev = IntegerField('Electric Vehicle Penetration Percentage')
+    penetration_hp = IntegerField('Heat Pump Penetration Percentage')
+    #file_amidata = FileField('AMI Data (XLSX)', validators=[Regexp('^[^/\\]\.xlsx$')])
+    file_amidata = FileField('AMI Data (XLSX)', validators=[FileRequired()])
+    #file_tfcinfo = FileField('TFC Info (XLSX)', validators=[Regexp('^[^/\\]\.xlsx$')])
+    file_tfcinfo = FileField('TFC Info (XLSX)', validators=[FileRequired()])
+    submit = SubmitField("Calculate")
 
 
 # Get session uuid (or create on if not set).
 def get_session_uuid():
     if not 'user_uuid' in session:
-        session['user_uuid'] = uuid.uuid4()
+        session['user_uuid'] = str(uuid.uuid4())
     return session['user_uuid']
 
 
 # Only require one captcha per session. 
 def has_existing_captcha():
-    if not 'captcha_done' in session:
-        return "N"
-    else:
-        return "Y"
+    return False if not 'captcha_done' in session else True
 
 
 # Check uploaded file extension matches allowed set.
@@ -71,28 +95,75 @@ def page_form():
     form_fallback     = False
 
     # Set form defaults.
+    form = TFOTForm()
     userformdata = {
-      "penetration_hp": 10,
-      "penetration_ev": 20,
-      "file_amidata": "",
-      "file_tfcinfo": "",
-      "captcha_done": has_existing_captcha()
+        "penetration_hp": 10,
+        "penetration_ev": 20,
+        "files_good": False,
+        "captcha_done": has_existing_captcha(),
+        "flash_message": ""
     }
+
+    # Validate the captcha, if submitted.
+    if request.method == 'POST' and not has_existing_captcha():
+        if captcha.validate():
+            session['captcha_done'] = True
+        else:
+            userformdata["flash_message"] = "Captcha input incorrect or expired."
+            form_fallback = True
 
     # Handle POST case first. We'll fall back to input form
     # if there's something wrong with the user supplied data.
-    if request.method == 'POST':
+    if not form_fallback and form.validate_on_submit():
+        # Save user values to userformdata for later rendering.
+        userformdata["penetration_ev"] = form.penetration_ev.data
+        userformdata["penetration_hp"] = form.penetration_hp.data
 
-        #tfot = TFOverload_Tool(args.amidata, args.tcinfo, args.evpen, args.hppen, args.output)
-        # calc should show results, allow result download, and show a truncated form for 
-        # redoing the calculation with different options.
-        #return render_template("calc.html", USE_ISU_BRANDING=USE_ISU_BRANDING, userformdata=userformdata)
-        return "Not implemented"
+        # Handle files - Where to save this user's data (temporarily)
+        userfilepath = os.path.join(app.config['UPLOAD_FOLDER'], user_session_uuid)
+        os.makedirs(userfilepath, exist_ok=True)
+
+        # Handle files - Save files
+        if not form.file_amidata.data or not form.file_tfcinfo.data:
+            userformdata["flash_message"] = "Both AMI-Data.xlsx and TFC-Info.xlsx files are required."
+            form_fallback = True
+        else:
+            #fami = form.file_amidata.data
+            #fami_name = secure_filename(fami.filename)
+            #fami.save(os.path.join(userfilepath, 'amidata.xlsx'))
+            #form.file_amidata.data.save(os.path.join(userfilepath, 'amidata.xlsx'))
+            #form.file_tfcinfo.data.save(os.path.join(userfilepath, 'tfcinfo.xlsx'))
+            #open(os.path.join(userfilepath, 'amidata.xlsx'), 'w').write(form['file_amidata'].file.read())
+            #open(os.path.join(userfilepath, 'tfcinfo.xlsx'), 'w').write(form.file_tfcinfo.data)
+            print("hi")
+
+#        if not form_fallback:
+#            try:
+#                tfot = TFOverload_Tool(
+#                    os.path.join(userfilepath, 'amidata.xlsx'),
+#                    os.path.join(userfilepath, 'tfcinfo.xlsx'),
+#                    userformdata["penetration_ev"],
+#                    userformdata["penetration_hp"],
+#                    userfilepath
+#                    )
+#            except Exception as e:
+#                userformdata["flash_message"] = f"Calculation Error: {e}"
+#                form_fallback = True
+
+        if not form_fallback:
+            # calc should show results, allow result download, and show a truncated form for 
+            # redoing the calculation with different options.
+            #return render_template("calc.html", USE_ISU_BRANDING=USE_ISU_BRANDING, userformdata=userformdata)
+            return "Not implemented"
 
     # Either show form or fallback to form input because of a problem.
     if request.method == 'GET' or form_fallback:
-        print(f"brandit={USE_ISU_BRANDING}")
-        return render_template("form.html", USE_ISU_BRANDING=USE_ISU_BRANDING, userformdata=userformdata)
+        # Set form defaults and update.
+        form.penetration_ev.default = userformdata["penetration_ev"]
+        form.penetration_hp.default = userformdata["penetration_hp"]
+        form.process()
+        # Return the completed form to the user.
+        return render_template("form.html", USE_ISU_BRANDING=USE_ISU_BRANDING, userformdata=userformdata, form=form)
 
 
 # Deal with robots

@@ -5,8 +5,8 @@ matplotlib
 ipython
 flask
 flask_session
-flask-simple-captcha
-wtforms
+flask_session_captcha
+flask-wtf
 werkzeug
 cachelib
 gunicorn
