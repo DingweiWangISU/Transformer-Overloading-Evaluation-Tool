@@ -1,5 +1,8 @@
 User-agent: *  
 Allow: /
+Allow: /static
+Disallow: /form
+Disallow: /calc
 Disallow: /admin
 Disallow: /?s=
 Disallow: /*.txt$
