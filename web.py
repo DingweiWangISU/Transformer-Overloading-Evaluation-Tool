@@ -17,12 +17,12 @@ app.config['UPLOAD_FOLDER'] = os.getenv('WA_OUTPUT_DIR', default='output')
 ALLOWED_EXTENSIONS = {'xlsx'}
 
 # Configure session tracking
-SESSION_PERMANENT = False
-SESSION_USE_SIGNER = True
-SESSION_TYPE = 'cachelib'
-SESSION_SERIALIZATION_FORMAT = 'json'
-SESSION_FILE_DIR = f"{app.config['UPLOAD_FOLDER']}/sessions"
-SESSION_CACHELIB = FileSystemCache(threshold=512, cache_dir=SESSION_FILE_DIR), app.config.from_object(__name__)
+app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_USE_SIGNER'] = True
+app.config['SESSION_TYPE'] = 'cachelib'
+app.config['SESSION_SERIALIZATION_FORMAT'] = 'json'
+app.config['SESSION_FILE_DIR'] = f"{app.config['UPLOAD_FOLDER']}/sessions"
+app.config['SESSION_CACHELIB'] = FileSystemCache(threshold=512, cache_dir=app.config['SESSION_FILE_DIR'])
 Session(app)
 
 
