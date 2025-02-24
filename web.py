@@ -2,7 +2,7 @@
 #
 # ERPC HP/EV Transformer Overloading Evaluation Tool Web Application
 #
-# Expected Enivornment Variables:
+# Useful environment variables:
 #  - WA_SECRET_KEY
 #  - WA_OUTPUT_DIR
 #  - WA_ISU_BRANDING
@@ -41,17 +41,17 @@ def get_session_uuid():
     return session['user_uuid']
 
 
-# Check uploaded file extension matches allowed set.
-def is_allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
 # Only require one captcha per session. 
 def has_existing_captcha():
     if not 'captcha_done' in session:
         return "N"
     else:
         return "Y"
+
+
+# Check uploaded file extension matches allowed set.
+def is_allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 # The landing page should describe the purpose of the 
