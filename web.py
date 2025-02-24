@@ -12,12 +12,11 @@ from eprc.tfoverload_tool import TFOverload_Tool
 from flask import Flask, flash, request, render_template, session
 from flask_session import Session
 from cachelib.file import FileSystemCache
-from flask_wtf import FlaskForm, CSRFProtect
-from flask_wtf.file import FileField, FileRequired, FileAllowed
-from werkzeug.utils import secure_filename
-from wtforms import StringField, IntegerField, HiddenField, SubmitField
-from wtforms.validators import InputRequired, NumberRange, Regexp
 from flask_session_captcha import FlaskSessionCaptcha
+from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileRequired
+from werkzeug.utils import secure_filename
+from wtforms import Form, StringField, IntegerField, HiddenField, SubmitField, validators
 
 
 # Start the web application
@@ -45,7 +44,6 @@ app.config['CAPTCHA_INCLUDE_NUMERIC'] = True
 captcha = FlaskSessionCaptcha(app)
 
 # Misc settings
-csrf = CSRFProtect(app)
 ALLOWED_EXTENSIONS = {'xlsx'}
 USE_ISU_BRANDING = True if os.getenv('WA_ISU_BRANDING', default='T') == "T" else False
 
@@ -54,9 +52,7 @@ USE_ISU_BRANDING = True if os.getenv('WA_ISU_BRANDING', default='T') == "T" else
 class TFOTForm(FlaskForm):
     penetration_ev = IntegerField('Electric Vehicle Penetration Percentage')
     penetration_hp = IntegerField('Heat Pump Penetration Percentage')
-    #file_amidata = FileField('AMI Data (XLSX)', validators=[Regexp('^[^/\\]\.xlsx$')])
     file_amidata = FileField('AMI Data (XLSX)', validators=[FileRequired()])
-    #file_tfcinfo = FileField('TFC Info (XLSX)', validators=[Regexp('^[^/\\]\.xlsx$')])
     file_tfcinfo = FileField('TFC Info (XLSX)', validators=[FileRequired()])
     submit = SubmitField("Calculate")
 
@@ -100,8 +96,7 @@ def page_form():
         "penetration_hp": 10,
         "penetration_ev": 20,
         "files_good": False,
-        "captcha_done": has_existing_captcha(),
-        "flash_message": ""
+        "captcha_done": has_existing_captcha()
     }
 
     # Validate the captcha, if submitted.
@@ -109,12 +104,13 @@ def page_form():
         if captcha.validate():
             session['captcha_done'] = True
         else:
-            userformdata["flash_message"] = "Captcha input incorrect or expired."
+            flash("Captcha input incorrect or expired.")
             form_fallback = True
 
     # Handle POST case first. We'll fall back to input form
     # if there's something wrong with the user supplied data.
-    if not form_fallback and form.validate_on_submit():
+    #if not form_fallback and form.validate_on_submit():
+    if not form_fallback:
         # Save user values to userformdata for later rendering.
         userformdata["penetration_ev"] = form.penetration_ev.data
         userformdata["penetration_hp"] = form.penetration_hp.data
@@ -125,36 +121,31 @@ def page_form():
 
         # Handle files - Save files
         if not form.file_amidata.data or not form.file_tfcinfo.data:
-            userformdata["flash_message"] = "Both AMI-Data.xlsx and TFC-Info.xlsx files are required."
+            flash("Both AMI-Data.xlsx and TFC-Info.xlsx files are required.")
             form_fallback = True
         else:
-            #fami = form.file_amidata.data
-            #fami_name = secure_filename(fami.filename)
-            #fami.save(os.path.join(userfilepath, 'amidata.xlsx'))
-            #form.file_amidata.data.save(os.path.join(userfilepath, 'amidata.xlsx'))
-            #form.file_tfcinfo.data.save(os.path.join(userfilepath, 'tfcinfo.xlsx'))
-            #open(os.path.join(userfilepath, 'amidata.xlsx'), 'w').write(form['file_amidata'].file.read())
-            #open(os.path.join(userfilepath, 'tfcinfo.xlsx'), 'w').write(form.file_tfcinfo.data)
-            print("hi")
+            form.file_amidata.data.save(os.path.join(userfilepath, "amidata.xlsx"))
+            form.file_tfcinfo.data.save(os.path.join(userfilepath, "tfcinfo.xlsx"))
 
-#        if not form_fallback:
-#            try:
-#                tfot = TFOverload_Tool(
-#                    os.path.join(userfilepath, 'amidata.xlsx'),
-#                    os.path.join(userfilepath, 'tfcinfo.xlsx'),
-#                    userformdata["penetration_ev"],
-#                    userformdata["penetration_hp"],
-#                    userfilepath
-#                    )
-#            except Exception as e:
-#                userformdata["flash_message"] = f"Calculation Error: {e}"
-#                form_fallback = True
+        if not form_fallback:
+            try:
+                tfot = TFOverload_Tool(
+                    os.path.join(userfilepath, 'amidata.xlsx'),
+                    os.path.join(userfilepath, 'tfcinfo.xlsx'),
+                    userformdata["penetration_ev"],
+                    userformdata["penetration_hp"],
+                    userfilepath
+                    )
+                tfot.run()
+            except Exception as e:
+                flash(f"Calculation Error: {e}")
+                form_fallback = True
 
         if not form_fallback:
             # calc should show results, allow result download, and show a truncated form for 
             # redoing the calculation with different options.
             #return render_template("calc.html", USE_ISU_BRANDING=USE_ISU_BRANDING, userformdata=userformdata)
-            return "Not implemented"
+            return "Calc didn't erorr. Just need to work on display page."
 
     # Either show form or fallback to form input because of a problem.
     if request.method == 'GET' or form_fallback:
@@ -164,6 +155,8 @@ def page_form():
         form.process()
         # Return the completed form to the user.
         return render_template("form.html", USE_ISU_BRANDING=USE_ISU_BRANDING, userformdata=userformdata, form=form)
+    else:
+        return "How did you get here?"
 
 
 # Deal with robots

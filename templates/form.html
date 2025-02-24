@@ -5,13 +5,14 @@
 {% endblock %}
 
 {% block content %}
-  {% if userformdata.flash_message != "" %}
-    <div id="flash" class="flash">
-      <p>{{ userformdata.flash_message }}</p>
-    </div>
-  {% endif %}
-  <form method="post" action="" novalidate>
-    {{ form.csrf_token }}
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div id="flash" class="flash">
+        <p>{{ message }}</p>
+      </div>
+    {% endif %}
+  {% endwith %}
+  <form method="post" action="/form?" enctype="multipart/form-data">
     <p>{{ form.penetration_ev.label }}<br/>{{ form.penetration_ev() }}</p>
     <p>{{ form.penetration_hp.label }}<br/>{{ form.penetration_hp() }}</p>
     <p>{{ form.file_amidata.label }}<br/>{{ form.file_amidata() }}</p>
