@@ -2,6 +2,10 @@
 #
 # ERPC HP/EV Transformer Overloading Evaluation Tool Web Application
 #
+# Expected Enivornment Variables:
+#  - WA_SECRET_KEY
+#  - WA_OUTPUT_DIR
+#
 import os, uuid
 from werkzeug.utils import secure_filename
 from eprc.tfoverload_tool import TFOverload_Tool
@@ -38,12 +42,17 @@ def is_allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+# The landing page should describe the purpose of the 
+# application and how to generate the input files.
 @app.route("/")
 def page_landing():
     user_session_uuid = get_session_uuid()
     return render_template("landing.html")
 
 
+# The form page is the heart of the application. It
+# allows the user to upload data which is then either
+# processed or rejected (returned to the form)
 @app.route("/form", methods = ['GET', 'POST'])
 def page_form():
     user_session_uuid = get_session_uuid()
@@ -53,6 +62,8 @@ def page_form():
     # if there's something wrong with the user supplied data.
     if request.method == 'POST':
         #tfot = TFOverload_Tool(args.amidata, args.tcinfo, args.evpen, args.hppen, args.output)
+        # calc should show results, allow result download, and show a truncated form for 
+        # redoing the calculation with different options.
         #return render_template("calc.html")
         return "Not implemented"
 
