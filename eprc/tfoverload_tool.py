@@ -115,7 +115,7 @@ class TFOverload_Tool:
     # Check if the dataset has the correct number of rows (either 8760 or 8784)
             if len(raw_ami_data) not in [8760, 8784]:
                 raise Exception(f"RAW_AMI.xlsx must contain either 8760 (normal year) or 8784 (leap year) rows. Found: {len(raw_ami_data)} rows. Fix and re-upload.")
-                    return raw_ami_data
+            return raw_ami_data
 
         # %% Transformer data Processing
 
