@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Transformer Overloading Evaluation Tool Form{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div id="flash" class="flash">
+        <p>{{ message }}</p>
+      </div>
+    {% endif %}
+  {% endwith %}
+  <form method="post" action="/form?" enctype="multipart/form-data">
+    {{ form.csrf_token }}
+    <p>{{ form.penetration_ev.label }}<br/>{{ form.penetration_ev() }}</p>
+    <p>{{ form.penetration_hp.label }}<br/>{{ form.penetration_hp() }}</p>
+    <p>{{ form.file_amidata.label }}<br/>{{ form.file_amidata() }}</p>
+    <p>{{ form.file_tfcinfo.label }}<br/>{{ form.file_tfcinfo() }}</p>
+    {% if not userformdata.captcha_done %}
+      <p>{{ captcha() }}<br/>Please type the above captcha in the box below.<br/><input type="text" name="captcha"></p>
+    {% endif %}
+    <p>{{ form.submit(class_="form-submit") }}</p>
+  </form>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Transformer Overloading Evaluation Tool{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <p>The EPRC Tranformer Overloading Evaluation Tool can be used to determine which transformers are likely to overload given your existing infrastructure and estimated heat pump (HP) and electric vehcile (EV) penetration.</p>
+  <p>
+    <h4>Two files are required to use this tool: AMI-Data.xlsx and TFC-Info.xlsx.</h4>
+    <ul>
+      <li>
+        The <a href="{{ url_for('static', filename='samples/AMI.xlsx') }}"><b>AMI-Data.xlsx</b></a>
+        data file contains one year of hourly AMI data for all customers.
+	<br />
+        <a href="{{ url_for('static', filename='samples/AMI.xlsx') }}">
+          <img src="{{ url_for('static', filename='images/ami-data-xlsx.png') }}" alt="Screenshot of AMI Data showing layout">
+	</a>
+      </li>
+      <li>&nbsp;</li>
+      <li>
+        The <a href="{{ url_for('static', filename='samples/TC.xlsx') }}"><b>TFC-Info.xlsx</b></a>
+        data file contains transformer specifications and transformer-customer connectivity.
+	<br />
+        <a href="{{ url_for('static', filename='samples/TC.xlsx') }}">
+	  <img src="{{ url_for('static', filename='images/tfc-info-xlsx.png') }}" alt="Screenshot of TFC Info showing layout">
+	</a>
+      </li>
+    </ul>
+    Click on the filenames above to download a sample file.
+  </p>
+  <form method="get" action="/form">
+    <input type="submit" class="form-submit" value="Let's Begin">
+  </form>
+{% endblock %}

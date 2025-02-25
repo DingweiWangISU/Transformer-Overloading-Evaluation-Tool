@@ -1,0 +1,13 @@
+numpy
+pandas
+openpyxl
+matplotlib
+ipython
+flask
+flask_session
+flask_session_captcha
+flask-wtf
+werkzeug
+cachelib
+gunicorn
+pycodestyle

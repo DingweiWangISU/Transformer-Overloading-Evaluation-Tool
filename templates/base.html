@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width,initial-scale=1" name="viewport">
+    <meta content="telephone=no" name="format-detection">
+    <title>{% block title %}{% endblock %} - EPRC</title>
+    <!-- Iowa State University/ECE Style/Icons -->
+    <link href="https://cdn.theme.iastate.edu/merriweather/css/merriweather.css" rel="stylesheet">
+    <link href="https://cdn.theme.iastate.edu/font-awesome/css/font-awesome.css" rel="stylesheet">
+    <link href="https://www.ece.iastate.edu/eprc/wp-content/themes/iastate-theme/vendor/iastate-theme/php/public/css/iastate.min.css?v=2.0.12" rel="stylesheet">
+    <link href="https://cdn.theme.iastate.edu/favicon/favicon.ico" rel="icon" type="image/x-icon">
+    <link href="https://cdn.theme.iastate.edu/favicon/favicon.png" rel="icon" type="">
+    <link href="https://cdn.theme.iastate.edu/favicon/apple-touch-icon.png" rel="icon">
+    <!-- Site Specific CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% if USE_ISU_BRANDING %}
+      {% include 'branding-head.html' %}
+    {% endif %}
+  </head>
+  <body class="home page-template page-template-page-templates page-template-template-sidebar page-template-page-templatestemplate-sidebar-php page page-id-6">
+    {% if USE_ISU_BRANDING %}
+      {% include 'branding-header.html' %}
+      {% include 'branding-nav.html' %}
+    {% endif %}
+    <!-- Main Page Content -->
+    <main role="main" id="main-content" class="">
+      <div class="container">
+        <section class="content">
+          <header>
+            {% block header %}{% endblock %}
+          </header>
+          {% for message in get_flashed_messages() %}
+            <div class="flash">{{ message }}</div>
+          {% endfor %}
+          {% block content %}{% endblock %}
+        </section>
+      </div>
+      <!-- script src="{{ url_for('static', filename='index.js') }}"></script -->
+    </main>
+    {% if USE_ISU_BRANDING %}
+      {% include 'branding-footer.html' %}
+    {% endif %}
+  </body>
+</html>
