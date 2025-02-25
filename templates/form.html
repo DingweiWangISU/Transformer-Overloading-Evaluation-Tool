@@ -13,6 +13,7 @@
     {% endif %}
   {% endwith %}
   <form method="post" action="/form?" enctype="multipart/form-data">
+    {{ form.csrf_token }}
     <p>{{ form.penetration_ev.label }}<br/>{{ form.penetration_ev() }}</p>
     <p>{{ form.penetration_hp.label }}<br/>{{ form.penetration_hp() }}</p>
     <p>{{ form.file_amidata.label }}<br/>{{ form.file_amidata() }}</p>

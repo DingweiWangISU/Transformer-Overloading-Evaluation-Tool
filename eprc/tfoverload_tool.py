@@ -2164,7 +2164,7 @@ class TFOverload_Tool:
         plt.ylabel('Overloading Count')
         plt.grid(True)
         plt.legend(title="Transformer", bbox_to_anchor=(1.05, 1), loc='upper left')
-        plt.show()
+        #plt.show()
 
         # Plot for Monthly Overloads > 120%
         plt.figure(figsize=(12, 6))
@@ -2174,7 +2174,7 @@ class TFOverload_Tool:
         plt.ylabel('Overloading Count')
         plt.grid(True)
         plt.legend(title="Transformer", bbox_to_anchor=(1.05, 1), loc='upper left')
-        plt.show()
+        #plt.show()
 
         # Plot for Monthly Overloads > 140%
         plt.figure(figsize=(12, 6))
@@ -2184,11 +2184,18 @@ class TFOverload_Tool:
         plt.ylabel('Overloading Count')
         plt.grid(True)
         plt.legend(title="Transformer", bbox_to_anchor=(1.05, 1), loc='upper left')
-        plt.show()
+        #plt.show()
 
 
         # Show the plot
-        plt.show()
+        #plt.show()
+
+        # Save the plot
+        merged_output_figure_file = f'{self.outfolder}/Transformer_Load_Analysis_Results_pen_level_{Pen_Level_EV_percentage} and {Pen_Level_HP_percentage}.png'
+        plt.savefig(merged_output_figure_file, format='png')
+
+        # Return the path to the output files.
+        return [merged_output_file, merged_output_figure_file]
 
         print(f"Transformer Loading Results exported successfully to {merged_output_file}")
 

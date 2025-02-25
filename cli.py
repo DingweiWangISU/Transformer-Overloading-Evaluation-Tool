@@ -27,7 +27,12 @@ def cli_main(args):
     tfot = TFOverload_Tool(args.amidata, args.tcinfo, args.evpen, args.hppen, args.output)
     print("  Instance UUID = " + tfot.whoami())
     try:
-        tfot.run()
+        xlsx_output, png_output = tfot.run()
+        print("")
+        print("Calculation done:")
+        print(f'  Output XLSX: {xlsx_output}')
+        print(f'  Output PNG:  {png_output}')
+        print("")
     except Exception as e:
         print(f"! ERROR: {e}")
 

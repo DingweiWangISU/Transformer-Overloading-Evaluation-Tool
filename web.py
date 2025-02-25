@@ -13,10 +13,10 @@ from flask import Flask, flash, request, render_template, session
 from flask_session import Session
 from cachelib.file import FileSystemCache
 from flask_session_captcha import FlaskSessionCaptcha
-from flask_wtf import FlaskForm
+from flask_wtf import FlaskForm, CSRFProtect
 from flask_wtf.file import FileField, FileRequired
 from werkzeug.utils import secure_filename
-from wtforms import Form, StringField, IntegerField, HiddenField, SubmitField, validators
+from wtforms import Form, BooleanField, StringField, IntegerField, HiddenField, SubmitField, validators
 
 
 # Start the web application
@@ -39,11 +39,12 @@ app.config['CAPTCHA_LENGTH'] = 5
 app.config['CAPTCHA_WIDTH'] = 200
 app.config['CAPTCHA_HEIGHT'] = 160
 # app.config['CAPTCHA_LOG'] = False # log information to terminal
-app.config['CAPTCHA_INCLUDE_ALPHABET'] = True
+app.config['CAPTCHA_INCLUDE_ALPHABET'] = False
 app.config['CAPTCHA_INCLUDE_NUMERIC'] = True
 captcha = FlaskSessionCaptcha(app)
 
 # Misc settings
+csrf = CSRFProtect(app)
 ALLOWED_EXTENSIONS = {'xlsx'}
 USE_ISU_BRANDING = True if os.getenv('WA_ISU_BRANDING', default='T') == "T" else False
 
@@ -52,6 +53,7 @@ USE_ISU_BRANDING = True if os.getenv('WA_ISU_BRANDING', default='T') == "T" else
 class TFOTForm(FlaskForm):
     penetration_ev = IntegerField('Electric Vehicle Penetration Percentage')
     penetration_hp = IntegerField('Heat Pump Penetration Percentage')
+    #file_use_existing = BooleanField("Use existing AMI Data and TFC Info", default=False)
     file_amidata = FileField('AMI Data (XLSX)', validators=[FileRequired()])
     file_tfcinfo = FileField('TFC Info (XLSX)', validators=[FileRequired()])
     submit = SubmitField("Calculate")
@@ -67,11 +69,6 @@ def get_session_uuid():
 # Only require one captcha per session. 
 def has_existing_captcha():
     return False if not 'captcha_done' in session else True
-
-
-# Check uploaded file extension matches allowed set.
-def is_allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 # The landing page should describe the purpose of the 
@@ -110,7 +107,7 @@ def page_form():
     # Handle POST case first. We'll fall back to input form
     # if there's something wrong with the user supplied data.
     #if not form_fallback and form.validate_on_submit():
-    if not form_fallback:
+    if request.method == 'POST' and not form_fallback:
         # Save user values to userformdata for later rendering.
         userformdata["penetration_ev"] = form.penetration_ev.data
         userformdata["penetration_hp"] = form.penetration_hp.data
@@ -137,6 +134,7 @@ def page_form():
                     userfilepath
                     )
                 tfot.run()
+                xlsx_output, png_output = tfot.run()
             except Exception as e:
                 flash(f"Calculation Error: {e}")
                 form_fallback = True
