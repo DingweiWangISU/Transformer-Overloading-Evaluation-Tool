@@ -2194,7 +2194,7 @@ class TFOverload_Tool:
         plt.figure(figsize=(25, 20))
 
         # Plot for Monthly Overloads > 100%
-        plt.figure(figsize=(12, 6))
+        plt.figure(figsize=(25, 20))
         monthly_overload_pivot_100.plot(kind='line', marker='o')
         plt.title('Monthly Overloading Count > 100% for Each Transformer')
         plt.xlabel('Month')
@@ -2204,23 +2204,23 @@ class TFOverload_Tool:
         #plt.show()
 
         # Plot for Monthly Overloads > 120%
-        plt.figure(figsize=(12, 6))
-        monthly_overload_pivot_120.plot(kind='line', marker='o')
-        plt.title('Monthly Overloading Count > 120% for Each Transformer')
-        plt.xlabel('Month')
-        plt.ylabel('Overloading Count')
-        plt.grid(True)
-        plt.legend(title="Transformer", bbox_to_anchor=(1.05, 1), loc='upper left')
+  #      plt.figure(figsize=(25, 20))
+  #      monthly_overload_pivot_120.plot(kind='line', marker='o')
+  #      plt.title('Monthly Overloading Count > 120% for Each Transformer')
+  #      plt.xlabel('Month')
+  #      plt.ylabel('Overloading Count')
+  #      plt.grid(True)
+  #      plt.legend(title="Transformer", bbox_to_anchor=(1.05, 1), loc='upper left')
         #plt.show()
 
         # Plot for Monthly Overloads > 140%
-        plt.figure(figsize=(12, 6))
-        monthly_overload_pivot_140.plot(kind='line', marker='o')
-        plt.title('Monthly Overloading Count > 140% for Each Transformer')
-        plt.xlabel('Month')
-        plt.ylabel('Overloading Count')
-        plt.grid(True)
-        plt.legend(title="Transformer", bbox_to_anchor=(1.05, 1), loc='upper left')
+  #      plt.figure(figsize=(25, 20))
+  #      monthly_overload_pivot_140.plot(kind='line', marker='o')
+  #      plt.title('Monthly Overloading Count > 140% for Each Transformer')
+  #      plt.xlabel('Month')
+  #      plt.ylabel('Overloading Count')
+  #      plt.grid(True)
+  #      plt.legend(title="Transformer", bbox_to_anchor=(1.05, 1), loc='upper left')
         #plt.show()
 
 
