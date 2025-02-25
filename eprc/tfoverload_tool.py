@@ -15,6 +15,9 @@ from IPython import get_ipython
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+from openpyxl import load_workbook
+from openpyxl.styles import PatternFill
+from openpyxl.formatting.rule import ColorScaleRule
 
 
 class TFOverload_Tool:
