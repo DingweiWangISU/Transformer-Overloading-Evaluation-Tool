@@ -103,11 +103,19 @@ class TFOverload_Tool:
                 invalid_rows = raw_ami_data[raw_ami_data['Time'].isna()].index.tolist()
                 raise Exception(f"Invalid time format in RAW_AMI.xlsx at rows {invalid_rows}. Ensure the 'Time' column follows a consistent datetime format.")
 
-            # Check 8760 rows constraint
-            if len(raw_ami_data) != 8760:
-                raise Exception(f"RAW_AMI.xlsx must contain 8760 rows of data (excluding header). Found: {len(raw_ami_data)} rows. Fix and re-upload.")
+            # Detect the year from the first timestamp
+            year = raw_ami_data['Time'].dt.year.iloc[0]  # Extract year from first row
 
-            return raw_ami_data
+    # Check if it's a leap year
+            is_leap_year = (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0)
+
+    # Expected row count based on the year type
+            expected_rows = 8784 if is_leap_year else 8760
+
+    # Check if the dataset has the correct number of rows (either 8760 or 8784)
+            if len(raw_ami_data) not in [8760, 8784]:
+                raise Exception(f"RAW_AMI.xlsx must contain either 8760 (normal year) or 8784 (leap year) rows. Found: {len(raw_ami_data)} rows. Fix and re-upload.")
+                    return raw_ami_data
 
         # %% Transformer data Processing
 
@@ -195,17 +203,19 @@ class TFOverload_Tool:
         original_first_timestamp = pd.to_datetime(raw_data.iloc[0, 0])  # First value in the time column
         year = original_first_timestamp.year  # Extract the year
 
-        # Generate a universal time range for the identified year (8760 hourly timestamps)
-        new_time_range = pd.date_range(start=f"{year}-01-01 00:00:00", end=f"{year}-12-31 23:00:00", freq='H')
-
-        # Replace the first column with the universal timestamp
-        raw_data.iloc[:, 0] = new_time_range
+        is_leap_year = (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0)
+        
+        # Step 3: If it's a leap year, remove Feb 29 to keep 8760 rows
+        if is_leap_year and raw_data.iloc[:, 0].dt.strftime('%m-%d').eq('02-29').any():
+        
+            # Remove all rows corresponding to Feb 29
+            raw_data = raw_data[raw_data.iloc[:, 0].dt.strftime('%m-%d') != '02-29']
+            
         detected_year = year
-        valid_mtr_ids = validate_raw_tc(raw_tc_data)
-        raw_data = validate_raw_ami(raw_data, valid_mtr_ids)
+    
         # Extract meter IDs (assuming the first column is "Time", so meter IDs start from column index 1)
         meter_id_mapping = {f"Customer {i+1}": meter_id for i, meter_id in enumerate(raw_data.columns[1:])}
-
+    
         transformed_tc_data = transform_raw_tc_with_index_and_check(raw_tc_data, raw_data, power_factor)
         transformed_ami_data = transform_raw_to_ami(raw_data)
 
@@ -2144,7 +2154,31 @@ class TFOverload_Tool:
             annual_overload_df.to_excel(writer, sheet_name='Annual Overloads', index=False)
             monthly_overload_df.to_excel(writer, sheet_name='Monthly Overloads Breakdown', index=False)
 
-
+        # Load the workbook to modify formatting
+        wb = load_workbook(merged_output_file)
+        
+        # Define the red color gradient (light red → dark red)
+        color_scale = ColorScaleRule(
+            start_type="num", start_value=0, start_color="FFFFFF",  # White for 0
+            mid_type="num", mid_value=10, mid_color="FF9999",       # Light Red for moderate values
+            end_type="num", end_value=100, end_color="FF0000"       # Dark Red for high values
+        )
+        
+        # Function to apply conditional formatting to a specific worksheet and column range
+        def apply_gradient_fill(ws, start_row, end_row, start_col, end_col):
+            col_range = f"{start_col}{start_row}:{end_col}{end_row}"
+            ws.conditional_formatting.add(col_range, color_scale)
+        
+        # Apply formatting to "Annual Overloads" sheet
+        ws_annual = wb["Annual Overloads"]
+        apply_gradient_fill(ws_annual, 2, ws_annual.max_row, "C", "E")  # Apply to Overloads > 100%, 120%, 140%
+        
+        # Apply formatting to "Monthly Overloads Breakdown" sheet
+        ws_monthly = wb["Monthly Overloads Breakdown"]
+        apply_gradient_fill(ws_monthly, 2, ws_monthly.max_row, "D", "F")  # Apply to Overloads > 100%, 120%, 140%
+        
+        # Save the updated workbook
+        wb.save(merged_output_file)
         # import matplotlib.pyplot as plt
 
         # Group the monthly overloading data by transformer and month for visualization
