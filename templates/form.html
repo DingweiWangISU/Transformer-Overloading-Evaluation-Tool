@@ -12,6 +12,12 @@
       </div>
     {% endif %}
   {% endwith %}
+  {% if png_output %}
+    <h2>Calculation Result</h2>
+    <p><a href="/out?d={{ xlsx_output }}">Click to download result XLSX file.</a></p>
+    <p><a href="/out?d={{ png_output }}"><img src="/out?d={{ png_output }}" alt="plot of overloading tranformers"/></a></p>
+  {% endif %}
+  <h2>New Calculation</h2>
   <form method="post" action="/form?" enctype="multipart/form-data">
     {{ form.csrf_token }}
     <p>{{ form.penetration_ev.label }}<br/>{{ form.penetration_ev() }}</p>

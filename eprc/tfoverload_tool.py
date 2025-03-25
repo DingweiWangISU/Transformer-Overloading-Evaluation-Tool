@@ -9,9 +9,10 @@
 # CLI and WEB usage. --20250221, MVA.
 #
 
-import sys, random, uuid, re, warnings
+import os, sys, random, uuid, re, warnings
 from datetime import datetime, timedelta
 from IPython import get_ipython
+from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -2189,50 +2190,31 @@ class TFOverload_Tool:
         monthly_overload_pivot_120 = monthly_overload_df.pivot(index='Month', columns='Transformer', values='Monthly Overloads > 120% of capacity')
         monthly_overload_pivot_140 = monthly_overload_df.pivot(index='Month', columns='Transformer', values='Monthly Overloads > 140% of capacity')
 
-
-        # Plot the data
-        plt.figure(figsize=(25, 20))
-
         # Plot for Monthly Overloads > 100%
-        plt.figure(figsize=(25, 20))
-        monthly_overload_pivot_100.plot(kind='line', marker='o')
-        plt.title('Monthly Overloading Count > 100% for Each Transformer')
-        plt.xlabel('Month')
-        plt.ylabel('Overloading Count')
-        plt.grid(True)
-        plt.legend(title="Transformer", bbox_to_anchor=(1.05, 1), loc='upper left')
-        #plt.show()
-
-        # Plot for Monthly Overloads > 120%
-  #      plt.figure(figsize=(25, 20))
-  #      monthly_overload_pivot_120.plot(kind='line', marker='o')
-  #      plt.title('Monthly Overloading Count > 120% for Each Transformer')
-  #      plt.xlabel('Month')
-  #      plt.ylabel('Overloading Count')
-  #      plt.grid(True)
-  #      plt.legend(title="Transformer", bbox_to_anchor=(1.05, 1), loc='upper left')
-        #plt.show()
-
-        # Plot for Monthly Overloads > 140%
-  #      plt.figure(figsize=(25, 20))
-  #      monthly_overload_pivot_140.plot(kind='line', marker='o')
-  #      plt.title('Monthly Overloading Count > 140% for Each Transformer')
-  #      plt.xlabel('Month')
-  #      plt.ylabel('Overloading Count')
-  #      plt.grid(True)
-  #      plt.legend(title="Transformer", bbox_to_anchor=(1.05, 1), loc='upper left')
-        #plt.show()
-
-
-        # Show the plot
-        #plt.show()
+        #plt.figure(figsize=(32, 24), dpi=100)
+        #monthly_overload_pivot_100.plot(kind='line', marker='o')
+        #plt.title('Monthly Overloading Count > 100% for Each Transformer')
+        #plt.xlabel('Month')
+        #plt.ylabel('Overloading Count')
+        #plt.grid(True)
+        #plt.legend(title="Transformer", bbox_to_anchor=(1.05, 1), loc='upper left')
 
         # Save the plot
-        merged_output_figure_file = f'{self.outfolder}/Transformer_Load_Analysis_Results_pen_level_{Pen_Level_EV_percentage} and {Pen_Level_HP_percentage}.png'
-        plt.savefig(merged_output_figure_file, format='png')
+        #merged_output_figure_file = f'{self.outfolder}/Transformer_Load_Analysis_Results_pen_level_{Pen_Level_EV_percentage} and {Pen_Level_HP_percentage}.png'
+        #plt.savefig(merged_output_figure_file, format='png', dpi=100, bbox_inches='tight')
+        #plt.close('all')
 
-        # Return the path to the output files.
-        return [merged_output_file, merged_output_figure_file]
+        # Plot for Monthly Overloads > 100%
+        merged_output_figure_file = f'{self.outfolder}/Transformer_Load_Analysis_Results_pen_level_{Pen_Level_EV_percentage} and {Pen_Level_HP_percentage}.png'
+        ax = monthly_overload_pivot_100.plot(xlabel='Month', ylabel='Overloading Count', kind='line', marker='o', grid=True, title='Monthly Overloading Count > 100% for Each Transformer')
+        ax.legend(title="Transformer", bbox_to_anchor=(1.05, 1), loc='upper left')
+        fig = ax.get_figure()
+        fig.savefig(merged_output_figure_file, dpi=100, bbox_inches='tight')
+
+        # Return the path to the output files (strip off the path).
+        xlsx_head, xlsx_tail = os.path.split(merged_output_file)
+        png_head, png_tail = os.path.split(merged_output_figure_file)
+        return [xlsx_tail, png_tail]
 
         print(f"Transformer Loading Results exported successfully to {merged_output_file}")
 

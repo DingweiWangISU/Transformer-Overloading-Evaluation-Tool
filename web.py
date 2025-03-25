@@ -9,7 +9,7 @@
 #
 import os, uuid
 from eprc.tfoverload_tool import TFOverload_Tool
-from flask import Flask, flash, request, render_template, session
+from flask import Flask, flash, request, render_template, session, send_file, send_from_directory
 from flask_session import Session
 from cachelib.file import FileSystemCache
 from flask_session_captcha import FlaskSessionCaptcha
@@ -86,6 +86,8 @@ def page_landing():
 def page_form():
     user_session_uuid = get_session_uuid()
     form_fallback     = False
+    xlsx_output       = None
+    png_output        = None
 
     # Set form defaults.
     form = TFOTForm()
@@ -133,17 +135,12 @@ def page_form():
                     userformdata["penetration_hp"],
                     userfilepath
                     )
-                tfot.run()
                 xlsx_output, png_output = tfot.run()
             except Exception as e:
                 flash(f"Calculation Error: {e}")
-                form_fallback = True
 
-        if not form_fallback:
-            # calc should show results, allow result download, and show a truncated form for 
-            # redoing the calculation with different options.
-            #return render_template("calc.html", USE_ISU_BRANDING=USE_ISU_BRANDING, userformdata=userformdata)
-            return "Calc didn't erorr. Just need to work on display page."
+        # Always fallback to display the output or the error.
+        form_fallback = True
 
     # Either show form or fallback to form input because of a problem.
     if request.method == 'GET' or form_fallback:
@@ -152,9 +149,33 @@ def page_form():
         form.penetration_hp.default = userformdata["penetration_hp"]
         form.process()
         # Return the completed form to the user.
-        return render_template("form.html", USE_ISU_BRANDING=USE_ISU_BRANDING, userformdata=userformdata, form=form)
+        return render_template("form.html", USE_ISU_BRANDING=USE_ISU_BRANDING, userformdata=userformdata, form=form, xlsx_output=xlsx_output, png_output=png_output)
     else:
         return "How did you get here?"
+
+
+# Return Output
+@app.route("/out")
+def get_output():
+    # Find the user output folder.
+    user_session_uuid = get_session_uuid()
+    userfilepath = os.path.join(app.config['UPLOAD_FOLDER'], user_session_uuid)
+    # Only return output if the user has an output folder.
+    if os.path.exists(userfilepath):
+      # See if the file requested exists.
+      reqdoc = request.args.get('d')
+      if reqdoc is not None:
+        # Check requested doc is something expected.
+        reqfile, reqext = os.path.splitext(reqdoc)
+        if reqext in [".xlsx", ".png"] and reqfile.startswith("Transformer_Load_Analysis_Results_pen_level_"):
+            # Expected document format.
+            # Check if file exists
+            reqfspec = f"{userfilepath}/{reqdoc}"
+            if os.path.isfile(reqfspec):
+              # Should be good to return this to the user.
+              return send_from_directory(userfilepath, reqdoc)
+    # If anything is wrong, return an empty string.
+    return ""
 
 
 # Deal with robots
