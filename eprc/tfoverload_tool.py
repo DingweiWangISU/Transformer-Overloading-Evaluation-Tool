@@ -12,6 +12,7 @@
 import sys, random, uuid, re, warnings
 from datetime import datetime, timedelta
 from IPython import get_ipython
+from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -2201,35 +2202,11 @@ class TFOverload_Tool:
         plt.ylabel('Overloading Count')
         plt.grid(True)
         plt.legend(title="Transformer", bbox_to_anchor=(1.05, 1), loc='upper left')
-        #plt.show()
-
-        # Plot for Monthly Overloads > 120%
-  #      plt.figure(figsize=(25, 20))
-  #      monthly_overload_pivot_120.plot(kind='line', marker='o')
-  #      plt.title('Monthly Overloading Count > 120% for Each Transformer')
-  #      plt.xlabel('Month')
-  #      plt.ylabel('Overloading Count')
-  #      plt.grid(True)
-  #      plt.legend(title="Transformer", bbox_to_anchor=(1.05, 1), loc='upper left')
-        #plt.show()
-
-        # Plot for Monthly Overloads > 140%
-  #      plt.figure(figsize=(25, 20))
-  #      monthly_overload_pivot_140.plot(kind='line', marker='o')
-  #      plt.title('Monthly Overloading Count > 140% for Each Transformer')
-  #      plt.xlabel('Month')
-  #      plt.ylabel('Overloading Count')
-  #      plt.grid(True)
-  #      plt.legend(title="Transformer", bbox_to_anchor=(1.05, 1), loc='upper left')
-        #plt.show()
-
-
-        # Show the plot
-        #plt.show()
 
         # Save the plot
         merged_output_figure_file = f'{self.outfolder}/Transformer_Load_Analysis_Results_pen_level_{Pen_Level_EV_percentage} and {Pen_Level_HP_percentage}.png'
         plt.savefig(merged_output_figure_file, format='png')
+        plt.close('all')
 
         # Return the path to the output files.
         return [merged_output_file, merged_output_figure_file]
