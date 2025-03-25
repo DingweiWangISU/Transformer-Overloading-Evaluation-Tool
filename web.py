@@ -135,7 +135,6 @@ def page_form():
                     userformdata["penetration_hp"],
                     userfilepath
                     )
-                tfot.run()
                 xlsx_output, png_output = tfot.run()
             except Exception as e:
                 flash(f"Calculation Error: {e}")
