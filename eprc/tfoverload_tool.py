@@ -9,7 +9,7 @@
 # CLI and WEB usage. --20250221, MVA.
 #
 
-import sys, random, uuid, re, warnings
+import os, sys, random, uuid, re, warnings
 from datetime import datetime, timedelta
 from IPython import get_ipython
 from matplotlib.figure import Figure
@@ -2208,8 +2208,10 @@ class TFOverload_Tool:
         plt.savefig(merged_output_figure_file, format='png')
         plt.close('all')
 
-        # Return the path to the output files.
-        return [merged_output_file, merged_output_figure_file]
+        # Return the path to the output files (strip off the path).
+        xlsx_head, xlsx_tail = os.path.split(merged_output_file)
+        png_head, png_tail = os.path.split(merged_output_figure_file)
+        return [xlsx_tail, png_tail]
 
         print(f"Transformer Loading Results exported successfully to {merged_output_file}")
 
