@@ -9,7 +9,7 @@
 #
 import os, uuid
 from eprc.tfoverload_tool import TFOverload_Tool
-from flask import Flask, flash, request, render_template, session, send_file
+from flask import Flask, flash, request, render_template, session, send_file, send_from_directory
 from flask_session import Session
 from cachelib.file import FileSystemCache
 from flask_session_captcha import FlaskSessionCaptcha
@@ -173,7 +173,7 @@ def get_output():
             reqfspec = f"{userfilepath}/{reqdoc}"
             if os.path.isfile(reqfspec):
               # Should be good to return this to the user.
-              return send_file(reqfspec, attachment_filename=reqdoc)
+              return send_from_directory(userfilepath, reqdoc)
     # If anything is wrong, return an empty string.
     return ""
 
