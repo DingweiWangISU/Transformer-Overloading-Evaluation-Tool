@@ -9,7 +9,7 @@
 #
 import os, uuid
 from eprc.tfoverload_tool import TFOverload_Tool
-from flask import Flask, flash, request, render_template, session
+from flask import Flask, flash, request, render_template, session, send_file
 from flask_session import Session
 from cachelib.file import FileSystemCache
 from flask_session_captcha import FlaskSessionCaptcha
@@ -153,6 +153,30 @@ def page_form():
         return render_template("form.html", USE_ISU_BRANDING=USE_ISU_BRANDING, userformdata=userformdata, form=form, xlsx_output=xlsx_output, png_output=png_output)
     else:
         return "How did you get here?"
+
+
+# Return Output
+@app.route("/out")
+def get_output():
+    # Find the user output folder.
+    user_session_uuid = get_session_uuid()
+    userfilepath = os.path.join(app.config['UPLOAD_FOLDER'], user_session_uuid)
+    # Only return output if the user has an output folder.
+    if os.path.exists(userfilepath):
+      # See if the file requested exists.
+      reqdoc = request.args.get('d')
+      if reqdoc is not None:
+        # Check requested doc is something expected.
+        reqfile, reqext = os.path.splitext(reqdoc)
+        if reqext in [".xlsx", ".png"] and reqfile.startswith("Transformer_Load_Analysis_Results_pen_level_"):
+            # Expected document format.
+            # Check if file exists
+            reqfspec = f"{userfilepath}/{reqdoc}"
+            if os.path.isfile(reqfspec):
+              # Should be good to return this to the user.
+              return send_file(reqfspec, attachment_filename=reqdoc)
+    # If anything is wrong, return an empty string.
+    return ""
 
 
 # Deal with robots
