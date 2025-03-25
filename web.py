@@ -86,6 +86,8 @@ def page_landing():
 def page_form():
     user_session_uuid = get_session_uuid()
     form_fallback     = False
+    xlsx_output       = None
+    png_output        = None
 
     # Set form defaults.
     form = TFOTForm()
@@ -137,13 +139,9 @@ def page_form():
                 xlsx_output, png_output = tfot.run()
             except Exception as e:
                 flash(f"Calculation Error: {e}")
-                form_fallback = True
 
-        if not form_fallback:
-            # calc should show results, allow result download, and show a truncated form for 
-            # redoing the calculation with different options.
-            #return render_template("calc.html", USE_ISU_BRANDING=USE_ISU_BRANDING, userformdata=userformdata)
-            return "Calc didn't erorr. Just need to work on display page."
+        # Always fallback to display the output or the error.
+        form_fallback = True
 
     # Either show form or fallback to form input because of a problem.
     if request.method == 'GET' or form_fallback:
@@ -152,7 +150,7 @@ def page_form():
         form.penetration_hp.default = userformdata["penetration_hp"]
         form.process()
         # Return the completed form to the user.
-        return render_template("form.html", USE_ISU_BRANDING=USE_ISU_BRANDING, userformdata=userformdata, form=form)
+        return render_template("form.html", USE_ISU_BRANDING=USE_ISU_BRANDING, userformdata=userformdata, form=form, xlsx_output=xlsx_output, png_output=png_output)
     else:
         return "How did you get here?"
 
